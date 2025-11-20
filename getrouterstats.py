@@ -130,8 +130,8 @@ try:
     #     # print(f"{lease.signal} {lease.ipaddr:16s} {lease.hostname:36} {lease.down_speed} {lease.up_speed}")
     #     print(f"{lease.macaddr} {lease.ipaddr:16s} {lease.hostname:36} {lease.lease_time:12}")
 
-    print(f"{'Device Name':20} "f"{'Type':16} "f"{'IP Address':16} "f"{'Clients':8} "f"{'Location':20} "f"{'Signal':6} "f"{'Devices':80}")
-    print(f"{SEPARATOR*20} "f"{SEPARATOR*16} "f"{SEPARATOR*16} "f"{SEPARATOR*8} "f"{SEPARATOR*20} "f"{SEPARATOR*6} "f"{SEPARATOR*80}")
+    print(f"{'Device Name':20} "f"{'Type':16} "f"{'IP Address':16} "f"{'Clients':7} "f"{'Location':20} "f"{'Signal':6} "f"{'Devices':80}")
+    print(f"{SEPARATOR*20} "f"{SEPARATOR*16} "f"{SEPARATOR*16} "f"{SEPARATOR*7} "f"{SEPARATOR*20} "f"{SEPARATOR*6} "f"{SEPARATOR*80}")
 
     mesh_data = client.request('admin/easymesh_network?form=get_mesh_device_list_all&operation=read', 'operation=read')
     for device in mesh_data:
@@ -149,9 +149,9 @@ try:
         signal_strength = device.get('signal_strength', ' - ')
         if (signal_strength != ' - '): signal_strength = f"{signal_strength}/5"
 
-        print(f"{device_name:20} "f"{device_type:16} "f"{ip:16} "f"{connected_devices:<8} "f"{location:<20} "f"{signal_strength:<6} "f"{devices_string:<80}")
+        print(f"{device_name:20} "f"{device_type:16} "f"{ip:16} "f"{connected_devices:<7} "f"{location:<20} "f"{signal_strength:<6} "f"{devices_string:<80}")
 
-    print("\n")
+    print("")
     ethernet_data = client.request('admin/status?form=router&operation=read', 'operation=read')
     smart_data = client.request('admin/smart_network?form=game_accelerator&operation=loadDevice', 'operation=loadDevice')
 
@@ -173,6 +173,6 @@ try:
         link_text = link_speed_to_readable_format(link_speed_down, link_speed_up) if signal != ' - ' else 'Wired'
         print(f"{device_name:20} {device_type:16} {ip:16} {data_transfered:<12} {down_up_text:<26} {signal:<6} {link_text:<20}")
 
-    print("\n")
+    print("")
 finally:
     client.logout()  # always logout as TP-Link Web Interface only supports upto 1 user logged

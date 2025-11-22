@@ -184,7 +184,7 @@ try:
             "link_speed_readable": link_text,
             "link_speed_down": link_speed_down,
             "link_speed_up": link_speed_up,
-            "signal": signal,
+            "signal": device.get('signal', 0),
         })
 
         print(f"{device_name:20} {device_type:16} {ip:16} {data_transfered:<12} {down_up_text:<26} {signal:<6} {link_text:<20}")

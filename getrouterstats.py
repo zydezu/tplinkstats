@@ -1,39 +1,10 @@
-import os
+import os, json
 from dotenv import load_dotenv
-from logging import Logger
 from tplinkrouterc6u import (
-    TplinkRouterProvider,
-    TplinkRouter,
-    TplinkC1200Router,
-    TplinkC5400XRouter,
-    TPLinkMRClient, # Class for MR series routers which supports old firmwares with AES cipher CBC mode
-    TPLinkMRClientGCM, # Class for MR series routers which supports AES cipher GCM mode
-    TPLinkMR200Client,
-    TPLinkVRClient,
-    TPLinkEXClient, # Class for EX series routers which supports old firmwares with AES cipher CBC mode
-    TPLinkEXClientGCM, # Class for EX series routers which supports AES cipher GCM mode
-    TPLinkXDRClient,
-    TPLinkDecoClient,
-    TplinkC80Router,
-    TplinkWDRRouter,
-    TplinkRE330Router,
-    Connection
+    TplinkC5400XRouter
 )
 
-os.system("")
-class bcolors:
-    OKBLUE = '\033[94m'
-    WARNING = '\033[93m'
-    LINE = '\033[90m'
-    ENDC = '\033[0m'
-
-SEPARATOR = "-"
-
-load_dotenv()
-PASSWORD = os.getenv('ROUTER_PASSWORD')
-
-client = TplinkC5400XRouter('http://192.168.0.1', PASSWORD)
-
+# Helpers
 def seconds_to_readable_format(seconds: int) -> str:
     days, seconds = divmod(seconds, 86400)
     hours, seconds = divmod(seconds, 3600)
@@ -109,51 +80,80 @@ def get_client_names(data):
 
     return client_names
 
+os.system("")
+class bcolors:
+    OKBLUE = '\033[94m'
+    WARNING = '\033[93m'
+    LINE = '\033[90m'
+    ENDC = '\033[0m'
+SEPARATOR = "-"
+
+# load credentials
+load_dotenv()
+PASSWORD = os.getenv('ROUTER_PASSWORD')
+client = TplinkC5400XRouter('http://192.168.0.1', PASSWORD)
+
 try:
     client.authorize()
+
+    output = {}
+
     firmware = client.get_firmware()
     status = client.get_status()
 
+    output["firmware"] = firmware.__dict__
+    output["status"] = {
+        "uptime_readable": seconds_to_readable_format(status.wan_ipv4_uptime),
+        "uptime_seconds": status.wan_ipv4_uptime,
+        "cpu_usage": status.cpu_usage,
+        "memory_usage": status.mem_usage,
+        "clients_total": status.clients_total,
+        "wired_total": status.wired_total,
+        "wifi_total": status.wifi_clients_total
+    }
+
     print(f"{bcolors.OKBLUE}Uptime:{bcolors.ENDC} {bcolors.WARNING}{seconds_to_readable_format(status.wan_ipv4_uptime)}{bcolors.ENDC} | {bcolors.OKBLUE}CPU:{bcolors.ENDC} {bcolors.WARNING}{status.cpu_usage * 100}%{bcolors.ENDC} | {bcolors.OKBLUE}RAM:{bcolors.ENDC} {bcolors.WARNING}{status.mem_usage * 100}%{bcolors.ENDC}")
     print(f"Devices connected: {bcolors.WARNING}{status.clients_total}{bcolors.ENDC} ({bcolors.WARNING}{status.wired_total}{bcolors.ENDC} wired/{bcolors.WARNING}{status.wifi_clients_total}{bcolors.ENDC} wifi)\n")
-
-    # Get Address reservations, sort by ipaddr
-    # reservations = router.get_ipv4_reservations()
-    # reservations.sort(key=lambda a: a.ipaddr)
-    # for res in reservations:
-    #     print(f"{res.macaddr} {res.ipaddr:16s} {res.hostname:36} {'Permanent':12}")
-
-    # Get DHCP leases, sort by ipaddr
-    # leases = router.get_ipv4_dhcp_leases()
-    # leases.sort(key=lambda a: a.ipaddr)
-    # for lease in leases:
-    #     # print(f"{lease.signal} {lease.ipaddr:16s} {lease.hostname:36} {lease.down_speed} {lease.up_speed}")
-    #     print(f"{lease.macaddr} {lease.ipaddr:16s} {lease.hostname:36} {lease.lease_time:12}")
 
     print(f"{'Device Name':20} "f"{'Type':16} "f"{'IP Address':16} "f"{'Clients':7} "f"{'Location':20} "f"{'Signal':6} "f"{'Devices':80}")
     print(f"{SEPARATOR*20} "f"{SEPARATOR*16} "f"{SEPARATOR*16} "f"{SEPARATOR*7} "f"{SEPARATOR*20} "f"{SEPARATOR*6} "f"{SEPARATOR*80}")
 
     mesh_data = client.request('admin/easymesh_network?form=get_mesh_device_list_all&operation=read', 'operation=read')
+    mesh_output = []
     for device in mesh_data:
         device_name = device.get('name', 'Unknown')
         device_type = device.get('device_type', 'Unknown')
-        connected_devices = device.get('client_num', 0)
         ip = device.get('ip', 'N/A')
         mac = device.get('mac', 'N/A')
-        devices_string = ""
+        connected_devices = device.get('client_num', 0)
+        client_names = ""
         if (mac != 'N/A'): 
             mesh_clients = client.request(f'admin/easymesh_network?form=mesh_sclient_detail&operation=read&mac={mac}', 'operation=read')
-            devices_string = ", ".join(get_client_names(mesh_clients))
-        location = device.get('location', '').capitalize()
+            client_names = ", ".join(get_client_names(mesh_clients))
+        location = device.get('location', '')
         if len(location) <= 1: location = 'Not set'
         signal_strength = device.get('signal_strength', ' - ')
         if (signal_strength != ' - '): signal_strength = f"{signal_strength}/5"
 
-        print(f"{device_name:20} "f"{device_type:16} "f"{ip:16} "f"{connected_devices:<7} "f"{location:<20} "f"{signal_strength:<6} "f"{devices_string:<80}")
+        mesh_output.append({
+            "device_name": device_name,
+            "device_type": device_type,
+            "ip": ip,
+            "mac": mac,
+            "connected_clients": connected_devices,
+            "location": location,
+            "signal_strength": device.get('signal_strength', 0),
+            "client_names": client_names
+        })
+
+        print(f"{device_name:20} "f"{device_type:16} "f"{ip:16} "f"{connected_devices:<7} "f"{location.replace("_", " ").capitalize():<20} "f"{signal_strength:<6} "f"{client_names:<80}")
+
+    output["mesh_data"] = mesh_output
 
     print("")
     ethernet_data = client.request('admin/status?form=router&operation=read', 'operation=read')
     smart_data = client.request('admin/smart_network?form=game_accelerator&operation=loadDevice', 'operation=loadDevice')
+    smart_output = []
 
     print(f"{'Device Name':20} {'Type':16} {'IP Address':16} {'Transfered':<12} {'Download/Upload':<26} {'Signal':6} {'Link speed':20}")
     print(f"{SEPARATOR*20} {SEPARATOR*16} {SEPARATOR*16} {SEPARATOR*12} {SEPARATOR*26} {SEPARATOR*6} {SEPARATOR*20}")
@@ -171,7 +171,28 @@ try:
 
         down_up_text = down_up_speed_to_readable_format(data_downloading, data_uploading)
         link_text = link_speed_to_readable_format(link_speed_down, link_speed_up) if signal != ' - ' else 'Wired'
+        
+        smart_output.append({
+            "device_name": device_name,
+            "device_type": device_type,
+            "ip": ip,
+            "data_transferred": device.get('trafficUsage', 0),
+            "data_transferred_readable": data_transfered,
+            "data_transfering_readable": down_up_text,
+            "data_downloading": data_downloading,
+            "data_uploading": data_uploading,
+            "link_speed_readable": link_text,
+            "link_speed_down": link_speed_down,
+            "link_speed_up": link_speed_up,
+            "signal": signal,
+        })
+
         print(f"{device_name:20} {device_type:16} {ip:16} {data_transfered:<12} {down_up_text:<26} {signal:<6} {link_text:<20}")
+
+    output["devices"] = smart_output
+
+    with open("network.json", "w") as f:
+        json.dump(output, f, indent=4)
 
     print("")
 finally:

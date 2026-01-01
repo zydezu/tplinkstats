@@ -197,3 +197,5 @@ try:
     print("")
 finally:
     client.logout()  # always logout as TP-Link Web Interface only supports upto 1 user logged
+
+input()

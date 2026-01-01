@@ -165,8 +165,8 @@ try:
         data_transfered = bytes_to_readable_format(device.get('trafficUsage', 0))
         data_downloading = device.get('downloadSpeed', 0)
         data_uploading = device.get('uploadSpeed', 0)
-        link_speed_down = device.get('rxrate', 0)
-        link_speed_up = device.get('txrate', 0)
+        link_speed_down = device.get('txrate', 0)
+        link_speed_up = device.get('rxrate', 0)
         signal = device.get('signal', ' - ')
 
         down_up_text = down_up_speed_to_readable_format(data_downloading, data_uploading)

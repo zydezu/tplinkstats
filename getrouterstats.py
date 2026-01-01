@@ -115,8 +115,8 @@ try:
     print(f"{bcolors.OKBLUE}Uptime:{bcolors.ENDC} {bcolors.WARNING}{seconds_to_readable_format(status.wan_ipv4_uptime)}{bcolors.ENDC} | {bcolors.OKBLUE}CPU:{bcolors.ENDC} {bcolors.WARNING}{status.cpu_usage * 100}%{bcolors.ENDC} | {bcolors.OKBLUE}RAM:{bcolors.ENDC} {bcolors.WARNING}{status.mem_usage * 100}%{bcolors.ENDC}")
     print(f"Devices connected: {bcolors.WARNING}{status.clients_total}{bcolors.ENDC} ({bcolors.WARNING}{status.wired_total}{bcolors.ENDC} wired/{bcolors.WARNING}{status.wifi_clients_total}{bcolors.ENDC} wifi)\n")
 
-    print(f"{'Device Name':20} "f"{'Type':16} "f"{'IP Address':16} "f"{'Clients':7} "f"{'Location':20} "f"{'Signal':6} "f"{'Devices':80}")
-    print(f"{SEPARATOR*20} "f"{SEPARATOR*16} "f"{SEPARATOR*16} "f"{SEPARATOR*7} "f"{SEPARATOR*20} "f"{SEPARATOR*6} "f"{SEPARATOR*80}")
+    print(f"{'Device Name':30} "f"{'Type':20} "f"{'IP Address':16} "f"{'Clients':7} "f"{'Location':20} "f"{'Signal':6} "f"{'Devices':80}")
+    print(f"{SEPARATOR*30} "f"{SEPARATOR*20} "f"{SEPARATOR*16} "f"{SEPARATOR*7} "f"{SEPARATOR*20} "f"{SEPARATOR*6} "f"{SEPARATOR*80}")
 
     mesh_data = client.request('admin/easymesh_network?form=get_mesh_device_list_all&operation=read', 'operation=read')
     mesh_output = []
@@ -146,7 +146,7 @@ try:
             "client_names": client_names
         })
 
-        print(f"{device_name:20} "f"{device_type:16} "f"{ip:16} "f"{connected_devices:<7} "f"{location.replace("_", " ").capitalize():<20} "f"{signal_strength:<6} "f"{client_names:<80}")
+        print(f"{device_name:30} "f"{device_type:20} "f"{ip:16} "f"{connected_devices:<7} "f"{location.replace("_", " ").capitalize():<20} "f"{signal_strength:<6} "f"{client_names:<80}")
 
     output["mesh_data"] = mesh_output
 
@@ -155,8 +155,8 @@ try:
     smart_data = client.request('admin/smart_network?form=game_accelerator&operation=loadDevice', 'operation=loadDevice')
     smart_output = []
 
-    print(f"{'Device Name':20} {'Type':16} {'IP Address':16} {'Transfered':<12} {'Download/Upload':<26} {'Signal':6} {'Link speed':20}")
-    print(f"{SEPARATOR*20} {SEPARATOR*16} {SEPARATOR*16} {SEPARATOR*12} {SEPARATOR*26} {SEPARATOR*6} {SEPARATOR*20}")
+    print(f"{'Device Name':30} {'Type':20} {'IP Address':16} {'Transfered':<12} {'Download/Upload':<26} {'Signal':6} {'Link speed':20}")
+    print(f"{SEPARATOR*30} {SEPARATOR*20} {SEPARATOR*16} {SEPARATOR*12} {SEPARATOR*26} {SEPARATOR*6} {SEPARATOR*20}")
 
     for device in smart_data:
         device_name = device.get('deviceName', 'Unknown')
@@ -187,7 +187,7 @@ try:
             "signal": device.get('signal', 0),
         })
 
-        print(f"{device_name:20} {device_type:16} {ip:16} {data_transfered:<12} {down_up_text:<26} {signal:<6} {link_text:<20}")
+        print(f"{device_name:30} {device_type:20} {ip:16} {data_transfered:<12} {down_up_text:<26} {signal:<6} {link_text:<20}")
 
     output["devices"] = smart_output
 

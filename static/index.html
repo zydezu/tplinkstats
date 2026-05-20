@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Router Stats</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="/static/app.js" defer></script>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>TP-Link <span>Router Stats</span></h1>
+        <button class="refresh-btn" onclick="fetchData(true)">
+            <svg id="refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 4 23 10 17 10"></polyline>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+            </svg>
+            Refresh
+        </button>
+    </div>
+
+    <div class="container">
+
+        <!-- Traffic Summary -->
+        <div class="traffic-grid">
+            <div class="traffic-card">
+                <div class="traffic-label">↓ Total Download</div>
+                <div class="traffic-value c-green" id="total-down">—</div>
+            </div>
+            <div class="traffic-card">
+                <div class="traffic-label">↑ Total Upload</div>
+                <div class="traffic-value c-blue" id="total-up">—</div>
+            </div>
+            <div class="traffic-card">
+                <div class="traffic-label">⇅ Data Transferred</div>
+                <div class="traffic-value c-purple" id="total-traffic">—</div>
+            </div>
+        </div>
+
+        <!-- Main grid -->
+        <div class="main-grid">
+            <!-- System Status -->
+            <div class="metric-stack">
+                <div class="card-title" style="padding-left:4px">System</div>
+                <div class="metric-tile">
+                    <div class="metric-icon">🕐</div>
+                    <div class="metric-label">Uptime</div>
+                    <div class="metric-value c-cyan" id="m-uptime">—</div>
+                </div>
+                <div class="metric-tile">
+                    <div class="metric-icon">⚡</div>
+                    <div class="metric-label">CPU Usage</div>
+                    <div class="metric-value c-purple" id="m-cpu">—</div>
+                </div>
+                <div class="metric-tile">
+                    <div class="metric-icon">🧠</div>
+                    <div class="metric-label">Memory Usage</div>
+                    <div class="metric-value c-pink" id="m-mem">—</div>
+                </div>
+                <div class="metric-tile">
+                    <div class="metric-icon">📡</div>
+                    <div class="metric-label">Total Clients</div>
+                    <div class="metric-value c-green" id="m-clients">—</div>
+                </div>
+            </div>
+
+            <!-- Right: tables -->
+            <div class="right-panel">
+                <div class="tables-row">
+                    <!-- Mesh Devices -->
+                    <div class="card">
+                        <div class="card-title">Mesh Devices</div>
+                        <div class="tbl-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Type</th>
+                                        <th>IP</th>
+                                        <th class="center">Clients</th>
+                                        <th>Location</th>
+                                        <th class="center">Signal</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="mesh-tbody">
+                                    <tr>
+                                        <td colspan="6" class="skeleton">Loading…</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Connected Devices -->
+                    <div class="card">
+                        <div class="card-title">Connected Devices</div>
+                        <div class="tbl-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Device</th>
+                                        <th>Type</th>
+                                        <th>IP</th>
+                                        <th>Speed</th>
+                                        <th>Traffic</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="devices-tbody">
+                                    <tr>
+                                        <td colspan="5" class="skeleton">Loading…</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="error-banner" id="error-banner"></div>
+
+        <div class="footer">
+            <span class="live-dot"></span>
+            <span id="last-updated">Fetching data…</span>
+        </div>
+    </div>
+
+</body>
+
+</html>

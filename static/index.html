@@ -7,12 +7,13 @@
     <title>Router Stats</title>
     <link rel="stylesheet" href="/static/style.css">
     <script src="/static/app.js" defer></script>
+    <link rel="icon" href="/static/favicon.jpg">
 </head>
 
 <body>
 
     <div class="header">
-        <h1>TP-Link <span>Router Stats</span></h1>
+        <h1>Router Stats</h1>
         <button class="refresh-btn" onclick="fetchData(true)">
             <svg id="refresh-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <polyline points="23 4 23 10 17 10"></polyline>
@@ -44,24 +45,20 @@
         <div class="main-grid">
             <!-- System Status -->
             <div class="metric-stack">
-                <div class="card-title" style="padding-left:4px">System</div>
+                <div class="card-title system-card-title">System</div>
                 <div class="metric-tile">
-                    <div class="metric-icon">🕐</div>
                     <div class="metric-label">Uptime</div>
                     <div class="metric-value c-cyan" id="m-uptime">—</div>
                 </div>
                 <div class="metric-tile">
-                    <div class="metric-icon">⚡</div>
                     <div class="metric-label">CPU Usage</div>
                     <div class="metric-value c-purple" id="m-cpu">—</div>
                 </div>
                 <div class="metric-tile">
-                    <div class="metric-icon">🧠</div>
                     <div class="metric-label">Memory Usage</div>
                     <div class="metric-value c-pink" id="m-mem">—</div>
                 </div>
                 <div class="metric-tile">
-                    <div class="metric-icon">📡</div>
                     <div class="metric-label">Total Clients</div>
                     <div class="metric-value c-green" id="m-clients">—</div>
                 </div>

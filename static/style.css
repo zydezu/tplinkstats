@@ -5,12 +5,12 @@
       --border-h: rgba(255, 255, 255, 0.2);
       --text: #e2e8f0;
       --muted: #64748b;
-      --green: #4ade80;
-      --blue: #60a5fa;
-      --purple: #c084fc;
-      --cyan: #22d3ee;
-      --pink: #f472b6;
-      --yellow: #facc15;
+      --green: #7ee89a;
+      --blue: #93c4ff;
+      --purple: #c49ff5;
+      --cyan: #7adcf0;
+      --pink: #ff96c4;
+      --yellow: #f5cc4a;
       --mono: 'JetBrains Mono', monospace;
       --sans: "Hiragino Kaku Gothic Pro", "ヒラギノ角ゴ Pro W3", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
@@ -47,10 +47,6 @@
       font-weight: 700;
       letter-spacing: -0.02em;
       color: var(--text);
-  }
-
-  .header h1 span {
-      color: var(--cyan);
   }
 
   .refresh-btn {
@@ -103,6 +99,10 @@
       text-transform: uppercase;
       color: var(--muted);
       margin-bottom: 16px;
+  }
+
+  .system-card-title {
+      margin-bottom: 0;
   }
 
   /* Traffic summary */
@@ -162,11 +162,6 @@
 
   .metric-tile:hover {
       border-color: var(--border-h);
-  }
-
-  .metric-icon {
-      font-size: 1rem;
-      margin-bottom: 6px;
   }
 
   .metric-label {

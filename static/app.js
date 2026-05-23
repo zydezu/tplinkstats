@@ -108,4 +108,4 @@ function esc(s) {
 }
 
 fetchData();
-setInterval(fetchData, 5000);
+setInterval(fetchData, 2000);

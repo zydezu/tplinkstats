@@ -2,6 +2,8 @@
 
 This project shows the stats from a TPLink router as a web GUI.
 
+<img src="https://raw.githubusercontent.com/zydezu/tplinkstats/927f731a3b39d2eb05c095395ae6ac10ab4c9aaf/images/preview.png" alt="TPLink Stats">
+
 Thanks to the [TP-Link-Archer-C6U Python package](https://github.com/AlexandrErohin/TP-Link-Archer-C6U) for making this possible.
 
 ### Setup

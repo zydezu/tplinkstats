@@ -49,6 +49,11 @@
       color: var(--text);
   }
 
+  .header-actions {
+      display: flex;
+      gap: 8px;
+  }
+
   .refresh-btn {
       display: flex;
       align-items: center;

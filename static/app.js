@@ -161,6 +161,26 @@ function renderDevicesTable() {
         </tr>`).join('');
 }
 
+async function exportData() {
+    try {
+        const res = await fetch('/data');
+        const d = await res.json();
+        const blob = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const ts = new Date().toISOString().replace(/[:.]/g, '-');
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `router-stats-${ts}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+    } catch (err) {
+        console.error('Export error:', err);
+    }
+}
+
 function fmtMbps(bps) {
     return (bps / 1_000_000).toFixed(2) + ' Mbps';
 }

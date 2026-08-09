@@ -4,7 +4,7 @@ import os
 from dotenv import load_dotenv
 from tplinkrouterc6u import TplinkC5400XRouter
 
-JSON_PATH = "network.json"
+JSON_PATH = os.path.join("data", "network.json")
 
 
 # Helpers
@@ -246,6 +246,7 @@ def get_stats_json():
 
     output["errors"] = errors  # empty dict == all good
 
+    os.makedirs(os.path.dirname(JSON_PATH), exist_ok=True)
     with open(JSON_PATH, "w") as f:
         json.dump(output, f, indent=4)
 

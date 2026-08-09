@@ -88,6 +88,7 @@ def find_free_port(start: int = 8080) -> int:
 
 if __name__ == "__main__":
     # Clear stale data on startup so old data isn't shown
+    os.makedirs(os.path.dirname(JSON_PATH), exist_ok=True)
     with open(JSON_PATH, "w") as f:
         json.dump({}, f)
 

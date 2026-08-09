@@ -45,7 +45,6 @@
         <div class="main-grid">
             <!-- System Status -->
             <div class="metric-stack">
-                <div class="card-title system-card-title">System</div>
                 <div class="metric-tile">
                     <div class="metric-label">Uptime</div>
                     <div class="metric-value c-cyan" id="m-uptime">—</div>
@@ -71,15 +70,17 @@
                     <div class="card">
                         <div class="card-title">Mesh Devices</div>
                         <div class="tbl-wrap">
-                            <table>
-                                <thead>
+                            <table class="mesh-table">
+                                <thead id="mesh-thead">
                                     <tr>
-                                        <th>Name</th>
-                                        <th>Type</th>
-                                        <th>IP</th>
-                                        <th class="center">Clients</th>
-                                        <th>Location</th>
-                                        <th class="center">Signal</th>
+                                        <th class="sortable" data-key="device_name" data-type="string">Name</th>
+                                        <th class="sortable" data-key="device_type" data-type="string">Type</th>
+                                        <th class="sortable" data-key="ip" data-type="ip">IP</th>
+                                        <th class="sortable center" data-key="connected_clients" data-type="number">
+                                            Clients</th>
+                                        <th class="sortable" data-key="location" data-type="string">Location</th>
+                                        <th class="sortable center" data-key="signal_strength" data-type="number">Signal
+                                        </th>
                                     </tr>
                                 </thead>
                                 <tbody id="mesh-tbody">
@@ -95,19 +96,20 @@
                     <div class="card">
                         <div class="card-title">Connected Devices</div>
                         <div class="tbl-wrap">
-                            <table>
-                                <thead>
+                            <table class="devices-table">
+                                <thead id="devices-thead">
                                     <tr>
-                                        <th>Device</th>
-                                        <th>Type</th>
-                                        <th>IP</th>
-                                        <th>Speed</th>
-                                        <th>Traffic</th>
+                                        <th class="sortable" data-key="device_name" data-type="string">Device</th>
+                                        <th class="sortable" data-key="device_type" data-type="string">Type</th>
+                                        <th class="sortable" data-key="ip" data-type="ip">IP</th>
+                                        <th class="sortable" data-key="data_transfering_sort" data-type="number">Traffic
+                                        </th>
+                                        <th class="sortable" data-key="data_transferred" data-type="number">Total</th>
                                     </tr>
                                 </thead>
                                 <tbody id="devices-tbody">
                                     <tr>
-                                        <td colspan="5" class="skeleton">Loading…</td>
+                                        <td colspan="5" class="skeleton">Loading...</td>
                                     </tr>
                                 </tbody>
                             </table>

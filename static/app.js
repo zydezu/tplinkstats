@@ -1,4 +1,59 @@
 let lastMtime = null;
+let lastMesh = [];
+let lastDevices = [];
+const sortState = {
+    mesh: { key: null, dir: 1 },
+    devices: { key: null, dir: 1 },
+};
+
+function ipToComparable(ip) {
+    const parts = String(ip ?? '').split('.');
+    if (parts.length !== 4 || parts.some(p => p === '' || isNaN(p))) return -1;
+    return parts.reduce((acc, p) => acc * 256 + Number(p), 0);
+}
+
+function sortRows(rows, key, type, dir) {
+    const accessor = key === 'data_transfering_sort'
+        ? (r) => (r.data_downloading || 0) + (r.data_uploading || 0)
+        : (r) => r[key];
+
+    return [...rows].sort((a, b) => {
+        const av = accessor(a);
+        const bv = accessor(b);
+        if (type === 'ip') {
+            return (ipToComparable(av) - ipToComparable(bv)) * dir;
+        }
+        if (type === 'number') {
+            return ((av || 0) - (bv || 0)) * dir;
+        }
+        return String(av ?? '').localeCompare(String(bv ?? '')) * dir;
+    });
+}
+
+function updateSortIndicators(tableId, state) {
+    document.querySelectorAll(`#${tableId} th.sortable`).forEach(th => {
+        th.classList.remove('sort-asc', 'sort-desc');
+        if (th.dataset.key === state.key) {
+            th.classList.add(state.dir === 1 ? 'sort-asc' : 'sort-desc');
+        }
+    });
+}
+
+function initSortHandlers(tableId, state, render) {
+    document.querySelectorAll(`#${tableId} th.sortable`).forEach(th => {
+        th.addEventListener('click', () => {
+            const key = th.dataset.key;
+            if (state.key === key) {
+                state.dir *= -1;
+            } else {
+                state.key = key;
+                state.dir = 1;
+            }
+            updateSortIndicators(tableId, state);
+            render();
+        });
+    });
+}
 
 async function fetchData(manual = false) {
     const icon = document.getElementById('refresh-icon');
@@ -17,9 +72,9 @@ async function fetchData(manual = false) {
         const devices = d.devices || [];
         const mesh = d.mesh_data || [];
 
-        // Traffic summary
-        const totalDown = devices.reduce((s, x) => s + (x.data_downloading || 0), 0);
-        const totalUp = devices.reduce((s, x) => s + (x.data_uploading || 0), 0);
+        // Traffic summary (data_downloading/uploading are bytes/sec; convert to bits/sec)
+        const totalDown = devices.reduce((s, x) => s + (x.data_downloading || 0), 0) * 8;
+        const totalUp = devices.reduce((s, x) => s + (x.data_uploading || 0), 0) * 8;
         const totalTraffic = d.total_transferred_readable || '—';
 
         document.getElementById('total-down').textContent = fmtMbps(totalDown);
@@ -32,36 +87,10 @@ async function fetchData(manual = false) {
         document.getElementById('m-mem').textContent = (status.memory_usage ?? '—') + (status.memory_usage != null ? '%' : '');
         document.getElementById('m-clients').textContent = status.clients_total ?? '—';
 
-        // Mesh table
-        const meshTbody = document.getElementById('mesh-tbody');
-        if (mesh.length) {
-            meshTbody.innerHTML = mesh.map(m => `
-        <tr>
-          <td>${esc(m.device_name)}</td>
-          <td>${esc(m.device_type)}</td>
-          <td>${esc(m.ip)}</td>
-          <td class="center">${m.connected_clients}</td>
-          <td>${esc(m.location)}</td>
-          <td class="center">${m.signal_strength ? m.signal_strength + '/5' : '—'}</td>
-        </tr>`).join('');
-        } else {
-            meshTbody.innerHTML = '<tr><td colspan="6" class="skeleton">No mesh devices found</td></tr>';
-        }
-
-        // Devices table
-        const devTbody = document.getElementById('devices-tbody');
-        if (devices.length) {
-            devTbody.innerHTML = devices.map(dv => `
-        <tr>
-          <td>${esc(dv.device_name)}</td>
-          <td>${esc(dv.device_type)}</td>
-          <td>${esc(dv.ip)}</td>
-          <td class="c-green">${esc(dv.data_transfering_readable)}</td>
-          <td class="c-blue">${esc(dv.data_transferred_readable)}</td>
-        </tr>`).join('');
-        } else {
-            devTbody.innerHTML = '<tr><td colspan="5" class="skeleton">No devices found</td></tr>';
-        }
+        lastMesh = mesh;
+        lastDevices = devices;
+        renderMeshTable();
+        renderDevicesTable();
 
         // Only update timestamp when data is new
         if (isNew) {
@@ -95,6 +124,43 @@ async function fetchData(manual = false) {
     }
 }
 
+function renderMeshTable() {
+    const meshTbody = document.getElementById('mesh-tbody');
+    if (!lastMesh.length) {
+        meshTbody.innerHTML = '<tr><td colspan="6" class="skeleton">No mesh devices found</td></tr>';
+        return;
+    }
+    const { key, dir } = sortState.mesh;
+    const rows = key ? sortRows(lastMesh, key, document.querySelector(`#mesh-thead th[data-key="${key}"]`)?.dataset.type, dir) : lastMesh;
+    meshTbody.innerHTML = rows.map(m => `
+        <tr>
+          <td>${esc(m.device_name)}</td>
+          <td>${esc(m.device_type)}</td>
+          <td>${esc(m.ip)}</td>
+          <td class="center">${m.connected_clients}</td>
+          <td>${esc(m.location)}</td>
+          <td class="center">${m.signal_strength ? m.signal_strength + '/5' : '—'}</td>
+        </tr>`).join('');
+}
+
+function renderDevicesTable() {
+    const devTbody = document.getElementById('devices-tbody');
+    if (!lastDevices.length) {
+        devTbody.innerHTML = '<tr><td colspan="5" class="skeleton">No devices found</td></tr>';
+        return;
+    }
+    const { key, dir } = sortState.devices;
+    const rows = key ? sortRows(lastDevices, key, document.querySelector(`#devices-thead th[data-key="${key}"]`)?.dataset.type, dir) : lastDevices;
+    devTbody.innerHTML = rows.map(dv => `
+        <tr>
+          <td>${esc(dv.device_name)}</td>
+          <td>${esc(dv.device_type)}</td>
+          <td>${esc(dv.ip)}</td>
+          <td class="c-green">${esc(dv.data_transfering_readable)}</td>
+          <td class="c-blue">${esc(dv.data_transferred_readable)}</td>
+        </tr>`).join('');
+}
+
 function fmtMbps(bps) {
     return (bps / 1_000_000).toFixed(2) + ' Mbps';
 }
@@ -106,6 +172,9 @@ function esc(s) {
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;');
 }
+
+initSortHandlers('mesh-thead', sortState.mesh, renderMeshTable);
+initSortHandlers('devices-thead', sortState.devices, renderDevicesTable);
 
 fetchData();
 setInterval(fetchData, 2000);

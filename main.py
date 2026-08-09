@@ -4,11 +4,6 @@ Flask web UI for TP-Link router stats.
 Data is written to network.json by the separate poller.py process.
 This file doesn't fetch data from the router, it just watches
 network.json's mtime and serves that data.
-
-Static files live in static/
-    index.html  — page structure
-    app.js      — polling + DOM updates
-    style.css   — styles
 """
 
 import atexit

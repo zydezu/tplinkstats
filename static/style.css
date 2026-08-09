@@ -11,7 +11,7 @@
       --cyan: #7adcf0;
       --pink: #ff96c4;
       --yellow: #f5cc4a;
-      --mono: 'JetBrains Mono', monospace;
+      --mono: 'JetBrains Mono Nerd', monospace;
       --sans: "Hiragino Kaku Gothic Pro", "ヒラギノ角ゴ Pro W3", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   }
 
@@ -42,7 +42,7 @@
   }
 
   .header h1 {
-      font-family: var(--mono);
+      font-family: var(--sans);
       font-size: 1.5rem;
       font-weight: 700;
       letter-spacing: -0.02em;
@@ -56,8 +56,8 @@
       background: none;
       border: 1px solid var(--border);
       color: var(--muted);
-      font-family: var(--mono);
-      font-size: 0.75rem;
+      font-family: var(--sans);
+      font-size: 0.78rem;
       padding: 8px 16px;
       cursor: pointer;
       transition: border-color 0.2s, color 0.2s;
@@ -92,17 +92,12 @@
   }
 
   .card-title {
-      font-family: var(--mono);
+      font-family: var(--sans);
       font-size: 0.7rem;
       font-weight: 600;
       letter-spacing: 0.1em;
-      text-transform: uppercase;
       color: var(--muted);
       margin-bottom: 16px;
-  }
-
-  .system-card-title {
-      margin-bottom: 0;
   }
 
   /* Traffic summary */
@@ -133,7 +128,7 @@
   }
 
   .traffic-value {
-      font-family: var(--mono);
+      font-family: var(--sans);
       font-size: 1.8rem;
       font-weight: 700;
       line-height: 1;
@@ -198,19 +193,101 @@
 
   table {
       width: 100%;
+      table-layout: fixed;
       border-collapse: collapse;
       font-size: 0.78rem;
+  }
+
+  thead th,
+  tbody td {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+  }
+
+  .mesh-table th:nth-child(1),
+  .mesh-table td:nth-child(1) {
+      width: 22%;
+  }
+
+  .mesh-table th:nth-child(2),
+  .mesh-table td:nth-child(2) {
+      width: 20%;
+  }
+
+  .mesh-table th:nth-child(3),
+  .mesh-table td:nth-child(3) {
+      width: 18%;
+  }
+
+  .mesh-table th:nth-child(4),
+  .mesh-table td:nth-child(4) {
+      width: 12%;
+  }
+
+  .mesh-table th:nth-child(5),
+  .mesh-table td:nth-child(5) {
+      width: 16%;
+  }
+
+  .mesh-table th:nth-child(6),
+  .mesh-table td:nth-child(6) {
+      width: 12%;
+  }
+
+  .devices-table th:nth-child(1),
+  .devices-table td:nth-child(1) {
+      width: 26%;
+  }
+
+  .devices-table th:nth-child(2),
+  .devices-table td:nth-child(2) {
+      width: 20%;
+  }
+
+  .devices-table th:nth-child(3),
+  .devices-table td:nth-child(3) {
+      width: 18%;
+  }
+
+  .devices-table th:nth-child(4),
+  .devices-table td:nth-child(4) {
+      width: 18%;
+  }
+
+  .devices-table th:nth-child(5),
+  .devices-table td:nth-child(5) {
+      width: 18%;
   }
 
   thead th {
       font-family: var(--mono);
       font-size: 0.65rem;
       letter-spacing: 0.08em;
-      text-transform: uppercase;
       color: var(--muted);
       padding: 8px 10px;
       text-align: left;
       border-bottom: 1px solid var(--border);
+  }
+
+  thead th.sortable {
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.15s;
+  }
+
+  thead th.sortable:hover {
+      color: var(--text);
+  }
+
+  thead th.sortable.sort-asc::after {
+      content: '▾';
+      opacity: 1;
+  }
+
+  thead th.sortable.sort-desc::after {
+      content: '▴';
+      opacity: 1;
   }
 
   tbody tr {
@@ -315,7 +392,7 @@
       background: rgba(239, 68, 68, 0.12);
       border: 1px solid rgba(239, 68, 68, 0.35);
       color: #fca5a5;
-      font-family: var(--mono);
+      font-family: var(--sans);
       font-size: 0.7rem;
       padding: 8px 14px;
       margin-top: 14px;

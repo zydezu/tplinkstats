@@ -1,7 +1,7 @@
 [project]
 name = "tplinkstats"
 version = "0.1.0"
-description = "Add your description here"
+description = "A web GUI for TP Link routers"
 readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [

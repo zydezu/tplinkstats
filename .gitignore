@@ -1,4 +1,4 @@
-*/
+.venv/
 !static/
 !backend/
 !legacy/

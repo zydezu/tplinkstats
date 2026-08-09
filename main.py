@@ -16,7 +16,7 @@ import webbrowser
 
 from flask import Flask, jsonify, send_from_directory
 
-from getrouterstats import JSON_PATH, bytes_to_readable_format
+from backend.getrouterstats import JSON_PATH, bytes_to_readable_format
 
 app = Flask(__name__)
 
@@ -91,8 +91,8 @@ if __name__ == "__main__":
     with open(JSON_PATH, "w") as f:
         json.dump({}, f)
 
-    poller_path = os.path.join(os.path.dirname(__file__), "poller.py")
-    poller = subprocess.Popen([sys.executable, poller_path])
+    poller_path = os.path.join(os.path.dirname(__file__), "backend", "poller.py")
+    poller = subprocess.Popen([sys.executable, poller_path], cwd=os.path.dirname(__file__))
     atexit.register(poller.terminate)
     print(f"[main] Poller started (pid {poller.pid})")
 

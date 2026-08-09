@@ -1,4 +1,7 @@
 */
 !static/
+!backend/
+!legacy/
 .env
 *.json
+uv.lock

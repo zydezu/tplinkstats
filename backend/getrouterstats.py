@@ -2,9 +2,12 @@ import json
 import os
 
 from dotenv import load_dotenv
+from requests import post
 from tplinkrouterc6u import TplinkC5400XRouter
+from tplinkrouterc6u.common.encryption import EncryptionWrapper
 
 JSON_PATH = os.path.join("data", "network.json")
+ROUTER_HOST = "http://192.168.0.1"
 
 
 # Helpers
@@ -88,11 +91,26 @@ def get_client_names(data) -> list[str]:
 
 
 # Fetch functions
+def _get_encrypted_password(host: str, password: str) -> str:
+    """RSA-encrypt the plaintext web password the same way the router's own
+    login page does: fetch its public key, then encrypt the password with it.
+    This is what the C5400X login API expects in place of the plaintext password.
+    """
+    response = post(
+        f"{host}/cgi-bin/luci/;stok=/login?form=keys",
+        params={"operation": "read"},
+        timeout=10,
+    )
+    nn, ee = response.json()["data"]["password"]
+    return EncryptionWrapper.rsa_encrypt(password, nn, ee)
+
+
 def _make_client() -> TplinkC5400XRouter:
     """Create and return an authorised router client."""
     load_dotenv()
-    password = str(os.getenv("ROUTER_PASSWORD"))
-    client = TplinkC5400XRouter("http://192.168.0.1", password)
+    web_password = os.getenv("WEB_PASSWORD")
+    encrypted_password = _get_encrypted_password(ROUTER_HOST, web_password)
+    client = TplinkC5400XRouter(ROUTER_HOST, encrypted_password)
     client.authorize()
     return client
 

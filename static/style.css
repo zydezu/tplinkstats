@@ -1,12 +1,13 @@
   :root {
-      --bg: #0a0c10;
-      --surface: #111418;
-      --border: rgba(255, 255, 255, 0.08);
-      --border-h: rgba(255, 255, 255, 0.2);
-      --text: #e2e8f0;
-      --muted: #64748b;
+      /* Matches the dark palette from https://boysare.moe/assets/css/theme.css */
+      --bg: #0d0d0d;
+      --surface: #16151a;
+      --border: #222;
+      --border-h: #33324a;
+      --text: #e6e2e8;
+      --muted: #9d99a6;
       --green: #7ee89a;
-      --blue: #93c4ff;
+      --blue: #a9b8f0;
       --purple: #c49ff5;
       --cyan: #7adcf0;
       --pink: #ff96c4;
@@ -27,15 +28,16 @@
       background: var(--bg);
       color: var(--text);
       font-family: var(--sans);
+      font-size: 14px;
       min-height: 100vh;
-      padding: 24px;
+      padding: 16px;
   }
 
   .header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 28px;
+      margin-bottom: 18px;
       max-width: 1800px;
       margin-left: auto;
       margin-right: auto;
@@ -43,27 +45,31 @@
 
   .header h1 {
       font-family: var(--sans);
-      font-size: 1.5rem;
-      font-weight: 700;
-      letter-spacing: -0.02em;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: -0.01em;
       color: var(--text);
   }
 
   .header-actions {
       display: flex;
-      gap: 8px;
+      gap: 6px;
+  }
+
+  .kiosk .header-actions {
+      display: none;
   }
 
   .refresh-btn {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       background: none;
       border: 1px solid var(--border);
       color: var(--muted);
       font-family: var(--sans);
-      font-size: 0.78rem;
-      padding: 8px 16px;
+      font-size: 0.72rem;
+      padding: 6px 12px;
       cursor: pointer;
       transition: border-color 0.2s, color 0.2s;
   }
@@ -74,8 +80,8 @@
   }
 
   .refresh-btn svg {
-      width: 14px;
-      height: 14px;
+      width: 12px;
+      height: 12px;
   }
 
   /* Layout */
@@ -88,7 +94,7 @@
   .card {
       background: var(--surface);
       border: 1px solid var(--border);
-      padding: 20px;
+      padding: 14px 16px;
       transition: border-color 0.2s;
   }
 
@@ -98,25 +104,25 @@
 
   .card-title {
       font-family: var(--sans);
-      font-size: 0.7rem;
+      font-size: 0.66rem;
       font-weight: 600;
       letter-spacing: 0.1em;
       color: var(--muted);
-      margin-bottom: 16px;
+      margin-bottom: 10px;
   }
 
   /* Traffic summary */
   .traffic-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 20px;
+      gap: 8px;
+      margin-bottom: 14px;
   }
 
   .traffic-card {
       background: var(--surface);
       border: 1px solid var(--border);
-      padding: 20px;
+      padding: 14px;
       transition: border-color 0.2s;
   }
 
@@ -125,38 +131,38 @@
   }
 
   .traffic-label {
-      font-size: 0.72rem;
+      font-size: 0.68rem;
       color: var(--muted);
-      margin-bottom: 8px;
+      margin-bottom: 6px;
       font-family: var(--mono);
       letter-spacing: 0.05em;
   }
 
   .traffic-value {
       font-family: var(--sans);
-      font-size: 1.8rem;
-      font-weight: 700;
+      font-size: 1.2rem;
+      font-weight: 600;
       line-height: 1;
   }
 
   /* Main two-col */
   .main-grid {
       display: grid;
-      grid-template-columns: 220px 1fr;
-      gap: 12px;
+      grid-template-columns: 200px 1fr;
+      gap: 8px;
   }
 
   /* Metric tiles */
   .metric-stack {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 6px;
   }
 
   .metric-tile {
       background: var(--surface);
       border: 1px solid var(--border);
-      padding: 14px 16px;
+      padding: 10px 12px;
       transition: border-color 0.2s;
   }
 
@@ -165,7 +171,7 @@
   }
 
   .metric-label {
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       color: var(--muted);
       font-family: var(--mono);
       letter-spacing: 0.06em;
@@ -173,22 +179,22 @@
 
   .metric-value {
       font-family: var(--mono);
-      font-size: 1.25rem;
+      font-size: 0.95rem;
       font-weight: 700;
-      margin-top: 2px;
+      margin-top: 1px;
   }
 
   /* Right panel */
   .right-panel {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 8px;
   }
 
   .tables-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 12px;
+      gap: 8px;
   }
 
   /* Tables */
@@ -200,7 +206,7 @@
       width: 100%;
       table-layout: fixed;
       border-collapse: collapse;
-      font-size: 0.78rem;
+      font-size: 0.7rem;
   }
 
   thead th,
@@ -267,10 +273,10 @@
 
   thead th {
       font-family: var(--mono);
-      font-size: 0.65rem;
+      font-size: 0.6rem;
       letter-spacing: 0.08em;
       color: var(--muted);
-      padding: 8px 10px;
+      padding: 6px 8px;
       text-align: left;
       border-bottom: 1px solid var(--border);
   }
@@ -305,7 +311,7 @@
   }
 
   tbody td {
-      padding: 9px 10px;
+      padding: 6px 8px;
       color: var(--text);
       font-family: var(--mono);
   }
@@ -340,9 +346,9 @@
 
   /* Footer */
   .footer {
-      margin-top: 16px;
+      margin-top: 12px;
       font-family: var(--mono);
-      font-size: 0.68rem;
+      font-size: 0.65rem;
       color: var(--muted);
       text-align: right;
       max-width: 1800px;
@@ -376,8 +382,8 @@
   .skeleton {
       color: var(--muted);
       font-family: var(--mono);
-      font-size: 0.8rem;
-      padding: 12px 0;
+      font-size: 0.7rem;
+      padding: 8px 0;
   }
 
   /* Spinner on refresh btn */
@@ -398,9 +404,9 @@
       border: 1px solid rgba(239, 68, 68, 0.35);
       color: #fca5a5;
       font-family: var(--sans);
-      font-size: 0.7rem;
-      padding: 8px 14px;
-      margin-top: 14px;
+      font-size: 0.66rem;
+      padding: 7px 12px;
+      margin-top: 10px;
   }
 
   .error-banner.error-severe {
@@ -408,5 +414,83 @@
       border-color: #ef4444;
       color: #fecaca;
       font-weight: 700;
-      padding: 12px 16px;
+      padding: 10px 14px;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+      .main-grid {
+          grid-template-columns: 1fr;
+      }
+
+      .metric-stack {
+          flex-direction: row;
+          flex-wrap: wrap;
+      }
+
+      .metric-tile {
+          flex: 1 1 calc(50% - 5px);
+      }
+
+      .tables-row {
+          grid-template-columns: 1fr;
+      }
+  }
+
+  @media (max-width: 640px) {
+      body {
+          padding: 14px;
+      }
+
+      .header {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 10px;
+          margin-bottom: 14px;
+      }
+
+      .header-actions {
+          gap: 6px;
+      }
+
+      .refresh-btn {
+          flex: 1;
+          justify-content: center;
+          padding: 8px 10px;
+      }
+
+      .traffic-grid {
+          grid-template-columns: 1fr;
+          gap: 6px;
+      }
+
+      .traffic-card {
+          padding: 12px;
+      }
+
+      .traffic-value {
+          font-size: 1.1rem;
+      }
+
+      .metric-tile {
+          flex: 1 1 100%;
+      }
+
+      .card {
+          padding: 12px;
+      }
+
+      table {
+          min-width: 480px;
+          font-size: 0.68rem;
+      }
+
+      thead th,
+      tbody td {
+          padding: 6px 7px;
+      }
+
+      .footer {
+          text-align: left;
+      }
   }

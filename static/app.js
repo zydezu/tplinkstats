@@ -92,10 +92,13 @@ async function fetchData(manual = false) {
         renderMeshTable();
         renderDevicesTable();
 
-        // Only update timestamp when data is new
+        // Only update timestamp when data is new. Use the file's own mtime
+        // (not the browser's current time) so data carried over from a
+        // previous session shows its true age instead of "just now".
         if (isNew) {
+            const updatedAt = d.file_mtime ? new Date(d.file_mtime * 1000) : new Date();
             document.getElementById('last-updated').textContent =
-                'Last updated: ' + new Date().toLocaleTimeString();
+                'Last updated: ' + updatedAt.toLocaleTimeString();
         }
 
         // Show error banner
@@ -193,8 +196,16 @@ function esc(s) {
         .replace(/>/g, '&gt;');
 }
 
+const isKiosk = new URLSearchParams(window.location.search).get('kiosk') === '1';
+if (isKiosk) {
+    document.body.classList.add('kiosk');
+    sortState.devices.key = 'data_transfering_sort';
+    sortState.devices.dir = -1;
+    updateSortIndicators('devices-thead', sortState.devices);
+}
+
 initSortHandlers('mesh-thead', sortState.mesh, renderMeshTable);
 initSortHandlers('devices-thead', sortState.devices, renderDevicesTable);
 
 fetchData();
-setInterval(fetchData, 2000);
+setInterval(fetchData, 5000);

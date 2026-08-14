@@ -6,3 +6,4 @@ __pycache__/
 .env
 *.json
 uv.lock
+.main.pid

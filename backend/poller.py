@@ -4,7 +4,7 @@ import traceback
 
 import getrouterstats
 
-POLL_INTERVAL = 2  # seconds between fetches
+POLL_INTERVAL = 8  # seconds between fetches (a full fetch cycle already takes ~12s)
 
 
 def main():

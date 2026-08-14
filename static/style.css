@@ -116,7 +116,7 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
-      margin-bottom: 14px;
+      margin-bottom: 8px;
   }
 
   .traffic-card {
@@ -178,8 +178,8 @@
   }
 
   .metric-value {
-      font-family: var(--mono);
-      font-size: 0.95rem;
+      font-family: var(--sans);
+      font-size: 0.9rem;
       font-weight: 700;
       margin-top: 1px;
   }
@@ -425,11 +425,11 @@
 
       .metric-stack {
           flex-direction: row;
-          flex-wrap: wrap;
       }
 
       .metric-tile {
-          flex: 1 1 calc(50% - 5px);
+          flex: 1 1 0;
+          min-width: 0;
       }
 
       .tables-row {
@@ -473,7 +473,17 @@
       }
 
       .metric-tile {
-          flex: 1 1 100%;
+          flex: 1 1 0;
+          min-width: 0;
+          padding: 8px 6px;
+      }
+
+      .metric-label {
+          font-size: 0.58rem;
+      }
+
+      .metric-value {
+          font-size: 0.8rem;
       }
 
       .card {

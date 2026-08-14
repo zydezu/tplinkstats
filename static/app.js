@@ -55,9 +55,17 @@ function initSortHandlers(tableId, state, render) {
     });
 }
 
+function triggerPoll() {
+    // Wakes the backend poller immediately instead of waiting out its current sleep
+    fetch('/trigger-poll', { method: 'POST' }).catch(() => { });
+}
+
 async function fetchData(manual = false) {
     const icon = document.getElementById('refresh-icon');
-    if (manual) icon.classList.add('spinning');
+    if (manual) {
+        icon.classList.add('spinning');
+        triggerPoll();
+    }
 
     try {
         const res = await fetch('/data');
@@ -207,5 +215,7 @@ if (isKiosk) {
 initSortHandlers('mesh-thead', sortState.mesh, renderMeshTable);
 initSortHandlers('devices-thead', sortState.devices, renderDevicesTable);
 
+// Kick the poller awake as soon as the window opens
+triggerPoll();
 fetchData();
 setInterval(fetchData, 5000);

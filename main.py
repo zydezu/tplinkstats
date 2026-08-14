@@ -25,6 +25,7 @@ app = Flask(__name__)
 # JSON cache (reload only when file changes)
 _cache: dict = {}
 _cache_mtime: float = 0.0
+_poller_pid: int | None = None
 
 
 def _load_json_if_changed() -> dict:
@@ -77,6 +78,17 @@ def data():
     return jsonify(build_data())
 
 
+@app.route("/trigger-poll", methods=["POST"])
+def trigger_poll():
+    # Wakes the poller immediately instead of waiting out its current sleep,
+    if _poller_pid is not None:
+        try:
+            os.kill(_poller_pid, signal.SIGUSR1)
+        except OSError:
+            pass
+    return ("", 204)
+
+
 LOCK_PATH = os.path.join(os.path.dirname(__file__), ".main.pid")
 
 
@@ -88,7 +100,7 @@ def _stop_previous_instance() -> None:
     try:
         with open(LOCK_PATH) as f:
             old_pid = int(f.read().strip())
-    except (FileNotFoundError, ValueError):
+    except FileNotFoundError, ValueError:
         return
 
     try:
@@ -137,7 +149,10 @@ if __name__ == "__main__":
         f.write(str(os.getpid()))
 
     poller_path = os.path.join(os.path.dirname(__file__), "backend", "poller.py")
-    poller = subprocess.Popen([sys.executable, poller_path], cwd=os.path.dirname(__file__))
+    poller = subprocess.Popen(
+        [sys.executable, poller_path], cwd=os.path.dirname(__file__)
+    )
+    _poller_pid = poller.pid
 
     def _stop_poller() -> None:
         poller.terminate()

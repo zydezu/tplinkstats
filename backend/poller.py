@@ -1,10 +1,16 @@
+import signal
 import sys
-import time
+import threading
 import traceback
 
 import getrouterstats
 
 POLL_INTERVAL = 8  # seconds between fetches (a full fetch cycle already takes ~12s)
+
+# main.py sends SIGUSR1 (e.g. when a browser window first loads the page) to
+# skip the rest of the wait and start fetching immediately.
+_wake_event = threading.Event()
+signal.signal(signal.SIGUSR1, lambda signum, frame: _wake_event.set())
 
 
 def main():
@@ -19,7 +25,8 @@ def main():
         except Exception:
             print("[poller] ERROR during fetch:")
             traceback.print_exc()
-        time.sleep(POLL_INTERVAL)
+        _wake_event.wait(POLL_INTERVAL)
+        _wake_event.clear()
 
 
 if __name__ == "__main__":

@@ -6,6 +6,7 @@ import traceback
 import getrouterstats
 
 POLL_INTERVAL = 8  # seconds between fetches (a full fetch cycle already takes ~12s)
+USER_CONFLICT_RETRY_DELAY = 180  # seconds to wait before retrying login
 
 # main.py sends SIGUSR1 (e.g. when a browser window first loads the page) to
 # skip the rest of the wait and start fetching immediately.
@@ -20,6 +21,14 @@ def main():
             getrouterstats.get_stats_json()
             print(f"[poller] OK — {getrouterstats.JSON_PATH} updated")
         except RuntimeError as e:
+            if "user conflict" in str(e).lower():
+                # Wait as another user has accessed the router's web UI
+                print(
+                    f"[poller] Router busy (user conflict) — retrying login in {USER_CONFLICT_RETRY_DELAY}s"
+                )
+                _wake_event.wait(USER_CONFLICT_RETRY_DELAY)
+                _wake_event.clear()
+                continue
             print(f"[poller] FATAL: {e} — stopping")
             sys.exit(1)
         except Exception:

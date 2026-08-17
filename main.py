@@ -139,6 +139,9 @@ def find_free_port(start: int = 8080) -> int:
 
 
 if __name__ == "__main__":
+    # Server mode - don't open a browser window
+    headless = os.environ.get("TPLINKSTATS_SERVER") == "1"
+
     # Keep whatever data/network.json has from the last session so the page
     # shows last-known stats immediately instead of going blank on startup;
     # the poller overwrites it with fresh data once its first cycle completes.
@@ -170,8 +173,15 @@ if __name__ == "__main__":
     signal.signal(signal.SIGTERM, lambda signum, frame: sys.exit(0))
     print(f"[main] Poller started (pid {poller.pid})")
 
-    port = find_free_port()
+    if headless:
+        host = "127.0.0.1"
+        port = int(os.environ.get("PORT", 8090))
+    else:
+        host = "0.0.0.0"
+        port = find_free_port()
+
     url = f"http://localhost:{port}"
     print(f"[main] Server starting on {url}")
-    webbrowser.open(f"{url}/?kiosk=1")
-    app.run(host="0.0.0.0", port=port, threaded=True, debug=False)
+    if not headless:
+        webbrowser.open(f"{url}/?kiosk=1")
+    app.run(host=host, port=port, threaded=True, debug=False)

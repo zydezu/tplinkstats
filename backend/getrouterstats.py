@@ -3,6 +3,8 @@ import os
 
 from dotenv import load_dotenv
 from requests import post
+from requests.exceptions import ConnectionError as RequestsConnectionError
+from requests.exceptions import Timeout
 from tplinkrouterc6u import TplinkC5400XRouter
 from tplinkrouterc6u.common.encryption import EncryptionWrapper
 
@@ -240,6 +242,8 @@ def get_stats_json():
     try:
         try:
             client = _make_client()
+        except (RequestsConnectionError, Timeout) as e:
+            errors["connection"] = str(e)
         except Exception as e:
             errors["authorization"] = str(e)
 
@@ -270,5 +274,8 @@ def get_stats_json():
 
     if errors:
         print(f"[getrouterstats] errors: {errors}")
+    if "connection" in errors:
+        # Retry...
+        raise RuntimeError(f"Router unreachable: {errors['connection']}")
     if "authorization" in errors:
         raise RuntimeError(f"Authorization failed: {errors['authorization']}")

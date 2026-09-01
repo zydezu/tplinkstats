@@ -1,14 +1,14 @@
   :root {
       /* Matches the dark palette from https://boysare.moe/assets/css/theme.css */
-      --bg: #0d0d0d;
-      --surface: #16151a;
-      --border: #222;
-      --border-h: #33324a;
-      --text: #e6e2e8;
-      --muted: #9d99a6;
-      --green: #7ee89a;
-      --blue: #a9b8f0;
-      --purple: #c49ff5;
+      --bg: var(--mat-background, #0d0d0d);
+      --surface: var(--mat-surface_container, #16151a);
+      --border: var(--mat-outline_variant, #222);
+      --border-h: var(--mat-outline, #33324a);
+      --text: var(--mat-on_surface, #e6e2e8);
+      --muted: var(--mat-on_surface_variant, #9d99a6);
+      --green: var(--mat-tertiary, #7ee89a);
+      --blue: var(--mat-primary, #a9b8f0);
+      --purple: var(--mat-secondary, #c49ff5);
       --cyan: #7adcf0;
       --pink: #ff96c4;
       --yellow: #f5cc4a;

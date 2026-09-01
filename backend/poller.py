@@ -21,12 +21,19 @@ def main():
             getrouterstats.get_stats_json()
             print(f"[poller] OK — {getrouterstats.JSON_PATH} updated")
         except RuntimeError as e:
-            if "user conflict" in str(e).lower():
+            message = str(e).lower()
+            if "user conflict" in message:
                 # Wait as another user has accessed the router's web UI
                 print(
                     f"[poller] Router busy (user conflict) — retrying login in {USER_CONFLICT_RETRY_DELAY}s"
                 )
                 _wake_event.wait(USER_CONFLICT_RETRY_DELAY)
+                _wake_event.clear()
+                continue
+            if "router unreachable" in message:
+                # Retry - temporary network issue?
+                print(f"[poller] Router unreachable — retrying in {POLL_INTERVAL}s")
+                _wake_event.wait(POLL_INTERVAL)
                 _wake_event.clear()
                 continue
             print(f"[poller] FATAL: {e} — stopping")

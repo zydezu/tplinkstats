@@ -106,7 +106,7 @@ async function fetchData(manual = false) {
         if (isNew) {
             const updatedAt = d.file_mtime ? new Date(d.file_mtime * 1000) : new Date();
             document.getElementById('last-updated').textContent =
-                'Last updated: ' + updatedAt.toLocaleTimeString();
+                'Last updated: ' + updatedAt.toLocaleTimeString([], { hour12: false });
         }
 
         // Show error banner

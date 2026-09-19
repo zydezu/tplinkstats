@@ -13,6 +13,7 @@ import signal
 import socket
 import subprocess
 import sys
+import threading
 import time
 import webbrowser
 
@@ -157,7 +158,10 @@ if __name__ == "__main__":
     )
     _poller_pid = poller.pid
 
+    shutting_down = threading.Event()
+
     def _stop_poller() -> None:
+        shutting_down.set()
         poller.terminate()
         try:
             poller.wait(timeout=5)
@@ -165,6 +169,17 @@ if __name__ == "__main__":
             poller.kill()
         if os.path.exists(LOCK_PATH):
             os.remove(LOCK_PATH)
+
+    def _exit_if_poller_dies() -> None:
+        code = poller.wait()
+        if shutting_down.is_set():
+            return
+        print(f"[main] Poller exited (code {code}) — exiting so systemd restarts us")
+        if os.path.exists(LOCK_PATH):
+            os.remove(LOCK_PATH)
+        os._exit(1)  # non-zero so Restart=on-failure fires
+
+    threading.Thread(target=_exit_if_poller_dies, daemon=True).start()
 
     atexit.register(_stop_poller)
     # SIGTERM (e.g. from `kill`/`pkill`) doesn't run atexit handlers by default

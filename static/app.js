@@ -116,9 +116,10 @@ async function fetchData(manual = false) {
         if (errList.length) {
             banner.style.display = 'block';
             // Auth/connection failure
-            if (errs.authorization) {
+            const loginErr = errs.authorization || errs.connection;
+            if (loginErr) {
                 banner.className = 'error-banner error-severe';
-                banner.textContent = '⚠ Router unreachable — ' + errs.authorization;
+                banner.textContent = '⚠ Router unreachable, retrying — ' + loginErr.split('\n')[0];
             } else {
                 banner.className = 'error-banner';
                 banner.textContent = '⚠ Partial router error (stale data shown) — ' + errList.join(' | ');

@@ -6,6 +6,14 @@ const sortState = {
     devices: { key: null, dir: 1 },
 };
 
+// Columns that aren't plain fields on the row
+const SORT_KEYS = {
+    data_transfering_sort: r => (r.data_downloading || 0) + (r.data_uploading || 0),
+    // 0 for wired so they sort below every Wi-Fi client, then 1 (weak) to 4
+    signal_sort: r => (isWired(r) ? -1 : signalQuality(r)),
+    mesh_name: r => r.mesh_name || '',
+};
+
 function ipToComparable(ip) {
     const parts = String(ip ?? '').split('.');
     if (parts.length !== 4 || parts.some(p => p === '' || isNaN(p))) return -1;
@@ -13,9 +21,7 @@ function ipToComparable(ip) {
 }
 
 function sortRows(rows, key, type, dir) {
-    const accessor = key === 'data_transfering_sort'
-        ? (r) => (r.data_downloading || 0) + (r.data_uploading || 0)
-        : (r) => r[key];
+    const accessor = SORT_KEYS[key] || (r => r[key]);
 
     return [...rows].sort((a, b) => {
         const av = accessor(a);
@@ -58,6 +64,67 @@ function initSortHandlers(tableId, state, render) {
 function triggerPoll() {
     // Wakes the backend poller immediately instead of waiting out its current sleep
     fetch('/trigger-poll', { method: 'POST' }).catch(() => { });
+}
+
+// Connection indicators -----------------------------------------------------
+
+// Outer arc first, dot last, so lighting the last N reads as a signal meter
+const WIFI_ARCS = [
+    'M1.42 9a16 16 0 0 1 21.16 0',
+    'M5 12.55a11 11 0 0 1 14.08 0',
+    'M8.53 16.11a6 6 0 0 1 6.95 0',
+    'M12 20h.01',
+];
+
+function wifiIcon(bars) {
+    const lit = bars >= 1;
+    const paths = WIFI_ARCS.map((d, i) => {
+        const on = i >= WIFI_ARCS.length - bars;
+        return `<path d="${d}" opacity="${on ? 1 : 0.16}"></path>`;
+    }).join('');
+    return `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" aria-hidden="true">${paths}</svg>`;
+}
+
+function wiredIcon() {
+    return `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9 2.5v4.5"></path><path d="M15 2.5v4.5"></path>
+        <path d="M6 7h12v4a6 6 0 0 1-12 0z"></path><path d="M12 17v4.5"></path>
+    </svg>`;
+}
+
+function isWired(d) {
+    if (d.wired != null || d.connection) return d.wired === true || d.connection === 'Wired';
+    return !(Number(d.signal) < 0);
+}
+
+// dBm -> 1-4 bars
+function signalQuality(d) {
+    const dbm = Number(d.signal);
+    if (!Number.isFinite(dbm) || dbm >= 0) return 0;
+    if (dbm >= -55) return 4;
+    if (dbm >= -65) return 3;
+    if (dbm >= -75) return 2;
+    return 1;
+}
+
+function signalCell(d) {
+    if (isWired(d)) {
+        const tip = d.link_speed_readable && d.link_speed_readable !== 'Wired'
+            ? d.link_speed_readable : '';
+        return `<span class="sig sig-wired" title="${esc(tip)}">${wiredIcon()}<span
+            class="sig-text">Wired</span></span>`;
+    }
+    const tip = [d.connection, d.link_speed_readable].filter(Boolean).join(' · ');
+    return `<span class="sig sig-${signalQuality(d)}" title="${esc(tip)}">${wifiIcon(signalQuality(d))}<span
+            class="sig-text">${d.signal} dBm</span></span>`;
+}
+
+function meshCell(d) {
+    if (!d.mesh_name) return '<span class="mesh-tag mesh-unknown">—</span>';
+    const tip = d.mesh_location ? `${d.mesh_name} · ${d.mesh_location}` : d.mesh_name;
+    return `<span class="mesh-tag" title="${esc(tip)}">${esc(d.mesh_name)}</span>`;
 }
 
 async function fetchData(manual = false) {
@@ -146,30 +213,32 @@ function renderMeshTable() {
     const rows = key ? sortRows(lastMesh, key, document.querySelector(`#mesh-thead th[data-key="${key}"]`)?.dataset.type, dir) : lastMesh;
     meshTbody.innerHTML = rows.map(m => `
         <tr>
-          <td>${esc(m.device_name)}</td>
-          <td>${esc(m.device_type)}</td>
+          <td${tipAttr(m.device_name)}>${esc(m.device_name)}</td>
+          <td data-label="Type">${esc(m.device_type)}</td>
           <td>${esc(m.ip)}</td>
-          <td class="center">${m.connected_clients}</td>
-          <td>${esc(m.location)}</td>
-          <td class="center">${m.signal_strength ? m.signal_strength + '/5' : '—'}</td>
+          <td class="center" data-label="Clients">${m.connected_clients}</td>
+          <td data-label="Location">${esc(m.location)}</td>
+          <td class="center" data-label="Signal">${m.signal_strength ? m.signal_strength + '/5' : '—'}</td>
         </tr>`).join('');
 }
 
 function renderDevicesTable() {
     const devTbody = document.getElementById('devices-tbody');
     if (!lastDevices.length) {
-        devTbody.innerHTML = '<tr><td colspan="5" class="skeleton">No devices found</td></tr>';
+        devTbody.innerHTML = '<tr><td colspan="7" class="skeleton">No devices found</td></tr>';
         return;
     }
     const { key, dir } = sortState.devices;
     const rows = key ? sortRows(lastDevices, key, document.querySelector(`#devices-thead th[data-key="${key}"]`)?.dataset.type, dir) : lastDevices;
     devTbody.innerHTML = rows.map(dv => `
         <tr>
-          <td>${esc(dv.device_name)}</td>
-          <td>${esc(dv.device_type)}</td>
+          <td${tipAttr(dv.device_name)}>${esc(dv.device_name)}</td>
+          <td${tipAttr(dv.device_type)} data-label="Type">${esc(dv.device_type)}</td>
           <td>${esc(dv.ip)}</td>
-          <td class="c-green">${esc(dv.data_transfering_readable)}</td>
-          <td class="c-blue">${esc(dv.data_transferred_readable)}</td>
+          <td class="c-green" data-label="Traffic">${esc(dv.data_transfering_readable)}</td>
+          <td class="c-blue" data-label="Total">${esc(dv.data_transferred_readable)}</td>
+          <td>${signalCell(dv)}</td>
+          <td data-label="AP">${meshCell(dv)}</td>
         </tr>`).join('');
 }
 
@@ -202,7 +271,14 @@ function esc(s) {
     return String(s)
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+// Full value on hover for the cells CSS truncates with an ellipsis
+function tipAttr(s) {
+    return s ? ` title="${esc(s)}"` : '';
 }
 
 const isKiosk = new URLSearchParams(window.location.search).get('kiosk') === '1';

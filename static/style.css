@@ -193,7 +193,7 @@
 
   .tables-row {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: 8px;
   }
 
@@ -248,27 +248,80 @@
 
   .devices-table th:nth-child(1),
   .devices-table td:nth-child(1) {
-      width: 26%;
+      width: 22%;
   }
 
   .devices-table th:nth-child(2),
   .devices-table td:nth-child(2) {
-      width: 20%;
+      width: 13%;
   }
 
   .devices-table th:nth-child(3),
   .devices-table td:nth-child(3) {
-      width: 18%;
+      width: 14%;
   }
 
   .devices-table th:nth-child(4),
   .devices-table td:nth-child(4) {
-      width: 18%;
+      width: 16%;
   }
 
   .devices-table th:nth-child(5),
   .devices-table td:nth-child(5) {
-      width: 18%;
+      width: 12%;
+  }
+
+  .devices-table th:nth-child(6),
+  .devices-table td:nth-child(6) {
+      width: 12%;
+  }
+
+  .devices-table th:nth-child(7),
+  .devices-table td:nth-child(7) {
+      width: 11%;
+  }
+
+  .sig {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      vertical-align: middle;
+  }
+
+  .sig .icon {
+      width: 13px;
+      height: 13px;
+      flex: none;
+  }
+
+  .sig-text {
+      font-size: 0.66rem;
+      white-space: nowrap;
+  }
+
+  .sig-4,
+  .sig-3 {
+      color: var(--green);
+  }
+
+  .sig-2 {
+      color: var(--yellow);
+  }
+
+  .sig-1 {
+      color: #f87171;
+  }
+
+  .sig-wired {
+      color: var(--cyan);
+  }
+
+  .mesh-tag {
+      color: var(--muted);
+  }
+
+  .mesh-unknown {
+      opacity: 0.5;
   }
 
   thead th {
@@ -437,6 +490,130 @@
       }
   }
 
+  @media (max-width: 700px) {
+      .tbl-wrap {
+          overflow-x: visible;
+      }
+
+      table,
+      .mesh-table,
+      .devices-table {
+          min-width: 0;
+          table-layout: auto;
+      }
+
+      thead {
+          display: none;
+      }
+
+      .mesh-table,
+      .mesh-table tbody,
+      .devices-table,
+      .devices-table tbody,
+      .mesh-table tr,
+      .devices-table tr {
+          display: block;
+      }
+
+      .mesh-table tr,
+      .devices-table tr {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 3px 10px;
+          padding: 11px 2px;
+      }
+
+      .mesh-table td:nth-child(n),
+      .devices-table td:nth-child(n) {
+          display: block;
+          width: auto;
+          padding: 0;
+          overflow: visible;
+          text-overflow: clip;
+      }
+
+      .mesh-table td.skeleton,
+      .devices-table td.skeleton {
+          padding: 8px 0;
+      }
+
+      td[data-label]::before {
+          content: attr(data-label);
+          margin-right: 0.45em;
+          color: var(--muted);
+          font-size: 0.56rem;
+          letter-spacing: 0.08em;
+          text-transform: uppercase;
+      }
+
+      .devices-table td:nth-child(1) {
+          order: 1;
+          flex: 1 1 auto;
+          min-width: 0;
+          font-size: 0.82rem;
+          font-weight: 600;
+      }
+
+      .devices-table td:nth-child(6) {
+          order: 2;
+          flex: 0 0 auto;
+          margin-left: auto;
+      }
+
+      .devices-table td:nth-child(7) {
+          order: 3;
+          flex: 1 0 100%;
+          font-size: 0.66rem;
+      }
+
+      .devices-table td:nth-child(2),
+      .devices-table td:nth-child(3) {
+          font-size: 0.68rem;
+      }
+
+      .devices-table td:nth-child(2) {
+          order: 4;
+      }
+
+      .devices-table td:nth-child(3) {
+          order: 5;
+      }
+
+      .devices-table td:nth-child(5) {
+          order: 6;
+          flex: 0 0 auto;
+          margin-left: auto;
+      }
+
+      .devices-table td:nth-child(4) {
+          order: 7;
+          flex: 1 0 100%;
+      }
+
+      .mesh-table tr {
+          display: block;
+          padding: 10px 2px;
+      }
+
+      .mesh-table td:nth-child(n) {
+          padding: 1px 0;
+      }
+
+      .mesh-table td:nth-child(1) {
+          margin-bottom: 4px;
+          font-size: 0.82rem;
+          font-weight: 600;
+      }
+
+      .mesh-table td[data-label]::before {
+          display: inline-block;
+          width: 4.4em;
+          margin-right: 0;
+          vertical-align: top;
+      }
+  }
+
   @media (max-width: 640px) {
       body {
           padding: 14px;
@@ -472,10 +649,13 @@
           font-size: 1.1rem;
       }
 
+      .metric-stack {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+      }
+
       .metric-tile {
-          flex: 1 1 0;
-          min-width: 0;
-          padding: 8px 6px;
+          padding: 8px 10px;
       }
 
       .metric-label {
@@ -491,13 +671,7 @@
       }
 
       table {
-          min-width: 480px;
           font-size: 0.68rem;
-      }
-
-      thead th,
-      tbody td {
-          padding: 6px 7px;
       }
 
       .footer {

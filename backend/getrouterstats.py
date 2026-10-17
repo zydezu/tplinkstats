@@ -1,10 +1,10 @@
 import json
 import os
+import re
 
 from dotenv import load_dotenv
 from requests import post
-from requests.exceptions import ConnectionError as RequestsConnectionError
-from requests.exceptions import Timeout
+from requests.exceptions import ConnectionError as RequestsConnectionError, Timeout
 from tplinkrouterc6u import TplinkC5400XRouter
 from tplinkrouterc6u.common.encryption import EncryptionWrapper
 
@@ -73,23 +73,56 @@ def link_speed_to_readable_format(link_speed_down: int, link_speed_up: int) -> s
     return f"{down_str}/{up_str} {unit}"
 
 
-def get_client_names(data) -> list[str]:
-    client_names = []
+def normalize_mac(mac) -> str:
+    """Strip separators from a MAC so the router's two spellings compare equal."""
+    return re.sub(r"[^0-9a-fA-F]", "", str(mac or "")).upper()
 
-    if "mesh_nclient_list" in data:
-        client_names.extend(
-            [c.get("name") for c in data["mesh_nclient_list"] if "name" in c]
-        )
 
-    mesh_sclient = data.get("mesh_sclient_list", [])
-    if isinstance(mesh_sclient, dict):
-        for c in mesh_sclient.values():
-            if isinstance(c, dict) and "name" in c:
-                client_names.append(c["name"])
-    elif isinstance(mesh_sclient, list):
-        client_names.extend([c.get("name") for c in mesh_sclient if "name" in c])
+# map deviceTag values the router sends for clients
+KNOWN_BANDS = {"2.4GHz": "2.4 GHz", "5GHz": "5 GHz", "6GHz": "6 GHz"}
 
-    return client_names
+
+def describe_connection(device: dict) -> tuple[str, bool]:
+    """Return (label, is_wired) for a device."""
+    tag = str(device.get("deviceTag") or "").strip()
+    if tag == "wired":
+        return "Wired", True
+    if tag in KNOWN_BANDS:
+        return KNOWN_BANDS[tag], False
+    if device.get("signal") in (None, "", " - "):
+        return "Wired", True
+    return "Wi-Fi", False
+
+
+def get_client_entries(data) -> list[dict]:
+    """Flatten a mesh node's client detail response into one tagged list."""
+    clients: list[dict] = []
+
+    for entry in data.get("mesh_nclient_list") or []:
+        if isinstance(entry, dict) and entry.get("name"):
+            clients.append(_client_entry(entry, wired=False))
+
+    sclients = data.get("mesh_sclient_list") or []
+    if isinstance(sclients, dict):
+        sclients = [
+            {**entry, "mac": mac}
+            for mac, entry in sclients.items()
+            if isinstance(entry, dict)
+        ]
+    for entry in sclients:
+        if isinstance(entry, dict) and entry.get("name"):
+            clients.append(_client_entry(entry, wired=True))
+
+    return clients
+
+
+def _client_entry(entry: dict, wired: bool) -> dict:
+    return {
+        "name": entry.get("name", "Unknown"),
+        "mac": entry.get("mac", entry.get("macaddr", "")),
+        "ip": entry.get("ip", entry.get("ipaddr", "")),
+        "wired": wired,
+    }
 
 
 # Fetch functions
@@ -146,13 +179,13 @@ def fetch_mesh(client: TplinkC5400XRouter) -> list[dict]:
         mac = device.get("mac", "N/A")
         name = device.get("device_name", device.get("name", "Unknown"))
 
-        client_names = ""
+        client_entries: list[dict] = []
         if mac != "N/A":
             mesh_clients = client.request(
                 f"admin/easymesh_network?form=mesh_sclient_detail&operation=read&mac={mac}",
                 "operation=read",
             )
-            client_names = ", ".join(get_client_names(mesh_clients))
+            client_entries = get_client_entries(mesh_clients)
 
         location = device.get("location", "")
         if len(location) <= 1:
@@ -167,7 +200,8 @@ def fetch_mesh(client: TplinkC5400XRouter) -> list[dict]:
                 "connected_clients": device.get("client_num", 0),
                 "location": location,
                 "signal_strength": device.get("signal_strength", 0),
-                "client_names": client_names,
+                "client_names": ", ".join(c["name"] for c in client_entries),
+                "clients": client_entries,
             }
         )
 
@@ -186,12 +220,18 @@ def fetch_devices(client: TplinkC5400XRouter) -> list[dict]:
         data_uploading = device.get("uploadSpeed", 0)
         link_speed_down = device.get("txrate", 0)
         link_speed_up = device.get("rxrate", 0)
-        signal = device.get("signal", " - ")
+        connection, is_wired = describe_connection(device)
+
+        # dBm for wifi
+        try:
+            signal = int(device.get("signal"))
+        except TypeError, ValueError:
+            signal = None
 
         link_text = (
-            link_speed_to_readable_format(link_speed_down, link_speed_up)
-            if signal != " - "
-            else "Wired"
+            "Wired"
+            if is_wired
+            else link_speed_to_readable_format(link_speed_down, link_speed_up)
         )
 
         smart_output.append(
@@ -199,6 +239,10 @@ def fetch_devices(client: TplinkC5400XRouter) -> list[dict]:
                 "device_name": device.get("deviceName", "Unknown"),
                 "device_type": device.get("deviceType", "Unknown"),
                 "ip": device.get("ip", "N/A"),
+                "mac": device.get("mac", ""),
+                "connection": connection,
+                "wired": is_wired,
+                "is_guest": bool(device.get("isGuest")),
                 "data_transferred": device.get("trafficUsage", 0),
                 "data_transferred_readable": bytes_to_readable_format(
                     device.get("trafficUsage", 0)
@@ -211,18 +255,53 @@ def fetch_devices(client: TplinkC5400XRouter) -> list[dict]:
                 "link_speed_readable": link_text,
                 "link_speed_down": link_speed_down,
                 "link_speed_up": link_speed_up,
-                "signal": device.get("signal", 0),
+                "signal": signal,
             }
         )
 
     return smart_output
 
 
+def link_mesh_clients(devices: list[dict], mesh: list[dict]) -> None:
+    """Tag each device in-place with the mesh node it hangs off."""
+    by_mac: dict[str, dict] = {}
+    by_ip: dict[str, dict] = {}
+    by_name: dict[str, dict] = {}
+
+    for node in mesh:
+        for client in node.get("clients", []):
+            key = normalize_mac(client.get("mac"))
+            if key:
+                by_mac.setdefault(key, node)
+            if client.get("ip"):
+                by_ip.setdefault(client["ip"], node)
+            name = (client.get("name") or "").strip().casefold()
+            if name:
+                by_name.setdefault(name, node)
+
+    for device in devices:
+        node = (
+            by_mac.get(normalize_mac(device.get("mac")))
+            or by_ip.get(device.get("ip"))
+            or by_name.get((device.get("device_name") or "").strip().casefold())
+        )
+        device["mesh_name"] = node["device_name"] if node else None
+        device["mesh_location"] = node["location"] if node else None
+
+
 # Entry point for poller.py
 def get_stats_json():
-    """Fetch all router data and write it to JSON_PATH."""
+    """
+    Fetch all router data and write it to JSON_PATH.
 
-    # Seed output from whatever is already on disk
+    Each section (status, mesh, devices) is fetched independently so a
+    failure in one (e.g. mesh timeout) does not discard the others.
+    The previous JSON is loaded first so partial failures leave the last
+    good data for that section intact.
+    """
+
+    # Seed output from whatever is already on disk so partial failures
+    # preserve the last good data per section.
     try:
         with open(JSON_PATH) as f:
             output = json.load(f)
@@ -254,6 +333,9 @@ def get_stats_json():
                 output["devices"] = fetch_devices(client)
             except Exception as e:
                 errors["devices"] = str(e)
+
+            # Needs both halves, so runs last and survives either failing
+            link_mesh_clients(output.get("devices", []), output.get("mesh_data", []))
     finally:
         if client:
             client.logout()
@@ -267,7 +349,9 @@ def get_stats_json():
     if errors:
         print(f"[getrouterstats] errors: {errors}")
     if "connection" in errors:
-        # Retry...
+        # Transient: router rebooting, DHCP renew, or our own network not up
+        # yet at boot. Signal it as retryable so the poller keeps trying,
+        # rather than treating it like a fatal auth failure and exiting.
         raise RuntimeError(f"Router unreachable: {errors['connection']}")
     if "authorization" in errors:
         raise RuntimeError(f"Authorization failed: {errors['authorization']}")

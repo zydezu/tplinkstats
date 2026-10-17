@@ -607,10 +607,7 @@
       }
 
       .mesh-table td[data-label]::before {
-          display: inline-block;
-          width: 4.4em;
-          margin-right: 0;
-          vertical-align: top;
+          margin-right: 0.45em;
       }
   }
 

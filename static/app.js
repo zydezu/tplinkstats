@@ -215,7 +215,7 @@ function renderMeshTable() {
         <tr>
           <td${tipAttr(m.device_name)}>${esc(m.device_name)}</td>
           <td data-label="Type">${esc(m.device_type)}</td>
-          <td>${esc(m.ip)}</td>
+          <td data-label="IP">${esc(m.ip)}</td>
           <td class="center" data-label="Clients">${m.connected_clients}</td>
           <td data-label="Location">${esc(m.location)}</td>
           <td class="center" data-label="Signal">${m.signal_strength ? m.signal_strength + '/5' : '—'}</td>

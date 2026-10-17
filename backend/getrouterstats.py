@@ -220,17 +220,9 @@ def fetch_devices(client: TplinkC5400XRouter) -> list[dict]:
 
 # Entry point for poller.py
 def get_stats_json():
-    """
-    Fetch all router data and write it to JSON_PATH.
+    """Fetch all router data and write it to JSON_PATH."""
 
-    Each section (status, mesh, devices) is fetched independently so a
-    failure in one (e.g. mesh timeout) does not discard the others.
-    The previous JSON is loaded first so partial failures leave the last
-    good data for that section intact.
-    """
-
-    # Seed output from whatever is already on disk so partial failures
-    # preserve the last good data per section.
+    # Seed output from whatever is already on disk
     try:
         with open(JSON_PATH) as f:
             output = json.load(f)

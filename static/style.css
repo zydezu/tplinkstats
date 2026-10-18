@@ -1,3 +1,17 @@
+  @font-face {
+      font-family: "Hiragino Kaku Gothic Pro";
+      src: url("/static/fonts/HiraginoKakuGo_Pro_latin.woff2") format("woff2");
+      font-weight: 400;
+      font-display: swap;
+  }
+
+  @font-face {
+      font-family: "Hiragino Kaku Gothic Pro";
+      src: url("/static/fonts/HiraginoKakuGo_Pro_Bold_latin.woff2") format("woff2");
+      font-weight: 600;
+      font-display: swap;
+  }
+
   :root {
       /* Matches the dark palette from https://boysare.moe/assets/css/theme.css */
       --bg: var(--mat-background, #0d0d0d);

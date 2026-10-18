@@ -288,6 +288,12 @@
       vertical-align: middle;
   }
 
+  .icon {
+      width: 13px;
+      height: 13px;
+      vertical-align: middle;
+  }
+
   .sig .icon {
       width: 13px;
       height: 13px;

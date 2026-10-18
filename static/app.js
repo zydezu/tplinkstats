@@ -218,7 +218,7 @@ function renderMeshTable() {
           <td data-label="IP">${esc(m.ip)}</td>
           <td class="center" data-label="Clients">${m.connected_clients}</td>
           <td data-label="Location">${esc(m.location)}</td>
-          <td class="center" data-label="Signal">${m.signal_strength ? m.signal_strength + '/5' : '—'}</td>
+          <td class="center">${m.signal_strength ? wifiIcon(Math.max(1, Math.round(m.signal_strength * 4 / 5))) + ' ' + m.signal_strength + '/5' : wifiIcon(0)}</td>
         </tr>`).join('');
 }
 

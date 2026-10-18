@@ -520,8 +520,8 @@
           display: flex;
           flex-wrap: wrap;
           align-items: center;
-          gap: 3px 10px;
-          padding: 11px 2px;
+          gap: 2px 6px;
+          padding: 8px 2px;
       }
 
       .mesh-table td:nth-child(n),
@@ -556,65 +556,73 @@
           font-weight: 600;
       }
 
+      .devices-table td:nth-child(7) {
+          order: 2;
+          flex: 0 0 auto;
+          font-size: 0.66rem;
+          margin-right: 0.5em;
+      }
+
       .devices-table td:nth-child(6) {
+          order: 3;
+          flex: 0 0 auto;
+          margin-left: auto;
+      }
+
+      .devices-table td:nth-child(2),
+      .devices-table td:nth-child(3),
+      .devices-table td:nth-child(4),
+      .devices-table td:nth-child(5) {
+          order: 4;
+          flex: 0 0 auto;
+          font-size: 0.68rem;
+      }
+
+      .mesh-table tr {
+          display: flex;
+          flex-wrap: wrap;
+          align-items: center;
+          gap: 2px 6px;
+          padding: 8px 2px;
+      }
+
+      .mesh-table td:nth-child(1) {
+          order: 1;
+          flex: 1 1 auto;
+          min-width: 0;
+          font-size: 0.82rem;
+          font-weight: 600;
+          margin-bottom: 2px;
+      }
+
+      .mesh-table td:nth-child(6) {
           order: 2;
           flex: 0 0 auto;
           margin-left: auto;
       }
 
-      .devices-table td:nth-child(7) {
+      .mesh-table td:nth-child(3) {
           order: 3;
           flex: 1 0 100%;
-          font-size: 0.66rem;
+          font-size: 0.7rem;
       }
 
-      .devices-table td:nth-child(2),
-      .devices-table td:nth-child(3) {
-          font-size: 0.68rem;
-      }
-
-      .devices-table td:nth-child(2) {
+      .mesh-table td:nth-child(2),
+      .mesh-table td:nth-child(4),
+      .mesh-table td:nth-child(5) {
           order: 4;
-      }
-
-      .devices-table td:nth-child(3) {
-          order: 5;
-      }
-
-      .devices-table td:nth-child(5) {
-          order: 6;
           flex: 0 0 auto;
-          margin-left: auto;
-      }
-
-      .devices-table td:nth-child(4) {
-          order: 7;
-          flex: 1 0 100%;
-      }
-
-      .mesh-table tr {
-          display: block;
-          padding: 10px 2px;
-      }
-
-      .mesh-table td:nth-child(n) {
-          padding: 1px 0;
-      }
-
-      .mesh-table td:nth-child(1) {
-          margin-bottom: 4px;
-          font-size: 0.82rem;
-          font-weight: 600;
+          font-size: 0.7rem;
       }
 
       .mesh-table td[data-label]::before {
-          margin-right: 0.45em;
+          margin-right: 0.3em;
       }
   }
 
   @media (max-width: 640px) {
       body {
-          padding: 14px;
+          padding: 10px;
       }
 
       .header {
@@ -665,7 +673,15 @@
       }
 
       .card {
-          padding: 12px;
+          padding: 10px;
+      }
+
+      .traffic-card {
+          padding: 10px;
+      }
+
+      .traffic-value {
+          font-size: 1rem;
       }
 
       table {

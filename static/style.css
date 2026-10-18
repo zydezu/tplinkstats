@@ -545,7 +545,6 @@
           color: var(--muted);
           font-size: 0.56rem;
           letter-spacing: 0.08em;
-          text-transform: uppercase;
       }
 
       .devices-table td:nth-child(1) {

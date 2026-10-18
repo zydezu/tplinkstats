@@ -94,6 +94,19 @@ function wiredIcon() {
     </svg>`;
 }
 
+// Main mesh node (the router itself): a distinct glyph so it doesn't read as
+// "no signal" the way the dimmed wifi arcs do.
+function routerIcon() {
+    return `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <rect x="3" y="10" width="18" height="8" rx="2"></rect>
+        <circle cx="8" cy="14" r="1"></circle>
+        <circle cx="12" cy="14" r="1"></circle>
+        <circle cx="16" cy="14" r="1"></circle>
+        <path d="M8 10V6M16 10V6"></path>
+    </svg>`;
+}
+
 function isWired(d) {
     if (d.wired != null || d.connection) return d.wired === true || d.connection === 'Wired';
     return !(Number(d.signal) < 0);
@@ -217,7 +230,7 @@ function renderMeshTable() {
           <td data-label="IP">${esc(m.ip)}</td>
           <td class="center" data-label="Clients">${m.connected_clients}</td>
           <td data-label="Location">${esc(m.location)}</td>
-          <td class="center">${m.signal_strength ? wifiIcon(Math.max(1, Math.round(m.signal_strength * 4 / 5))) + ' ' + m.signal_strength + '/5' : wifiIcon(0)}</td>
+          <td class="center">${m.signal_strength ? (wifiIcon(Math.max(1, Math.round(m.signal_strength * 4 / 5))) + ' ' + m.signal_strength + '/5') : (routerIcon() + ' Main')}</td>
         </tr>`).join('');
 }
 

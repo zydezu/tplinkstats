@@ -273,16 +273,11 @@ tbody td {
 
 .devices-table th:nth-child(4),
 .devices-table td:nth-child(4) {
-    width: 14%;
+    width: 12%;
 }
 
 .devices-table th:nth-child(5),
 .devices-table td:nth-child(5) {
-    width: 12%;
-}
-
-.devices-table th:nth-child(6),
-.devices-table td:nth-child(6) {
     width: 12%;
 }
 
@@ -568,22 +563,21 @@ tbody td {
         font-weight: 600;
     }
 
-    .devices-table td:nth-child(6) {
+    .devices-table td:nth-child(5) {
         order: 2;
         flex: 0 0 auto;
         font-size: 0.66rem;
         margin-right: 0.5em;
     }
 
-    .devices-table td:nth-child(5) {
+    .devices-table td:nth-child(4) {
         order: 3;
         flex: 0 0 auto;
         margin-left: auto;
     }
 
     .devices-table td:nth-child(2),
-    .devices-table td:nth-child(3),
-    .devices-table td:nth-child(4) {
+    .devices-table td:nth-child(3) {
         order: 4;
         flex: 0 0 auto;
         font-size: 0.68rem;

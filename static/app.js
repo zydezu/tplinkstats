@@ -237,7 +237,7 @@ function renderMeshTable() {
 function renderDevicesTable() {
     const devTbody = document.getElementById('devices-tbody');
     if (!lastDevices.length) {
-        devTbody.innerHTML = '<tr><td colspan="6" class="skeleton">No devices found</td></tr>';
+        devTbody.innerHTML = '<tr><td colspan="5" class="skeleton">No devices found</td></tr>';
         return;
     }
     const { key, dir } = sortState.devices;
@@ -247,7 +247,6 @@ function renderDevicesTable() {
           <td${tipAttr(dv.device_name)}>${esc(dv.device_name)}</td>
           <td>${esc(dv.ip)}</td>
           <td class="c-green" data-label="Traffic">${esc(dv.data_transfering_readable)}</td>
-          <td class="c-blue" data-label="Total">${esc(dv.data_transferred_readable)}</td>
           <td>${signalCell(dv)}</td>
           <td data-label="AP">${meshCell(dv)}</td>
         </tr>`).join('');

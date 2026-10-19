@@ -115,16 +115,18 @@ function isWired(d) {
     return !(Number(d.signal) < 0);
 }
 
-// iOS-style 3-bar scale (iOS clamps to 1-3, never 0, never 4+):
-//   3 bars : RSSI >= -50 dBm
-//   2 bars : -50 > RSSI >= -65 dBm
-//   1 bar  : RSSI < -65 dBm
+// 3-bar scale per requested thresholds:
+//   3 bars : RSSI >= -65 dBm
+//   2 bars : -65 > RSSI >= -75 dBm
+//   1 bar  : -75 > RSSI >= -85 dBm
+//   0 bars : RSSI < -85 dBm  (no signal)
 function signalQuality(d) {
     const dbm = Number(d.signal);
     if (!Number.isFinite(dbm) || dbm >= 0) return 0; // wired / unknown
-    if (dbm >= -50) return 3;
-    if (dbm >= -65) return 2;
-    return 1;
+    if (dbm >= -65) return 3;
+    if (dbm >= -75) return 2;
+    if (dbm >= -85) return 1;
+    return 0;
 }
 
 function signalCell(d) {

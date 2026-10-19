@@ -68,18 +68,21 @@ function triggerPoll() {
 
 // Connection indicators -----------------------------------------------------
 
-// Outer arc first, dot last, so lighting the last N reads as a signal meter
+// Three bars (arcs) plus the base dot, matching iOS's 3-bar scale.
+// The dot is always lit; bars (0-3) lights the arcs from the inside out.
 const WIFI_ARCS = [
-    'M1.42 9a16 16 0 0 1 21.16 0',
-    'M5 12.55a11 11 0 0 1 14.08 0',
-    'M8.53 16.11a6 6 0 0 1 6.95 0',
-    'M12 20h.01',
+    'M1.42 9a16 16 0 0 1 21.16 0',   // outer arc  (bars >= 3)
+    'M5 12.55a11 11 0 0 1 14.08 0',  // mid arc    (bars >= 2)
+    'M8.53 16.11a6 6 0 0 1 6.95 0',  // inner arc  (bars >= 1)
+    'M12 20h.01',                      // base dot   (always lit)
 ];
 
 function wifiIcon(bars) {
-    const lit = bars >= 1;
+    const b = Math.max(0, Math.min(3, bars));
     const paths = WIFI_ARCS.map((d, i) => {
-        const on = i >= WIFI_ARCS.length - bars;
+        let on;
+        if (i === 3) on = true;          // base dot always on
+        else on = b >= (3 - i);         // outer needs 3, mid needs 2, inner needs 1
         return `<path d="${d}" opacity="${on ? 1 : 0.16}"></path>`;
     }).join('');
     return `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -112,13 +115,15 @@ function isWired(d) {
     return !(Number(d.signal) < 0);
 }
 
-// dBm -> 1-4 bars
+// iOS-style 3-bar scale (iOS clamps to 1-3, never 0, never 4+):
+//   3 bars : RSSI >= -50 dBm
+//   2 bars : -50 > RSSI >= -65 dBm
+//   1 bar  : RSSI < -65 dBm
 function signalQuality(d) {
     const dbm = Number(d.signal);
-    if (!Number.isFinite(dbm) || dbm >= 0) return 0;
-    if (dbm >= -55) return 4;
-    if (dbm >= -65) return 3;
-    if (dbm >= -75) return 2;
+    if (!Number.isFinite(dbm) || dbm >= 0) return 0; // wired / unknown
+    if (dbm >= -50) return 3;
+    if (dbm >= -65) return 2;
     return 1;
 }
 
@@ -230,7 +235,7 @@ function renderMeshTable() {
           <td data-label="IP">${esc(m.ip)}</td>
           <td class="center" data-label="Clients">${m.connected_clients}</td>
           <td data-label="Location">${esc(m.location)}</td>
-          <td class="center">${m.signal_strength ? (wifiIcon(Math.max(1, Math.round(m.signal_strength * 4 / 5))) + ' ' + m.signal_strength + '/5') : (routerIcon() + ' Main')}</td>
+          <td class="center">${m.signal_strength ? (wifiIcon(Math.max(1, Math.ceil(m.signal_strength * 3 / 5))) + ' ' + m.signal_strength + '/5') : (routerIcon() + ' Main')}</td>
         </tr>`).join('');
 }
 

@@ -68,25 +68,21 @@ function triggerPoll() {
 
 // Connection indicators -----------------------------------------------------
 
-// Three bars (arcs) plus the base dot, matching iOS's 3-bar scale.
-// The dot is always lit; bars (0-3) lights the arcs from the inside out.
+// Three-bar wifi icon (filled), based on the provided SVG. Each path is a
+// separate bar lit progressively: 1 bar = innermost, 3 = all.
 const WIFI_ARCS = [
-    'M1.42 9a16 16 0 0 1 21.16 0',   // outer arc  (bars >= 3)
-    'M5 12.55a11 11 0 0 1 14.08 0',  // mid arc    (bars >= 2)
-    'M8.53 16.11a6 6 0 0 1 6.95 0',  // inner arc  (bars >= 1)
-    'M12 20h.01',                      // base dot   (always lit)
+    'M512 192c-163 0-326 67.2-443 176.6-6.6 6-6.8 16.2-0.6 22.8l53.4 55.8c6.2 6.6 16.6 6.8 23.2 0.6 46.6-43.2 99.8-77.6 158.6-102 66-27.6 136.2-41.4 208.6-41.4s142.6 14 208.6 41.4c58.8 24.6 112 58.8 158.6 102 6.6 6.2 17 6 23.2-0.6l53.4-55.8c6.2-6.4 6-16.6-0.6-22.8C838 259.2 675 192 512 192z',
+    'M226.4 555l57.2 56.6c6.2 6 16 6.4 22.4 0.6 56.6-50.2 129.2-77.8 205.8-77.8s149.2 27.4 205.8 77.8c6.4 5.8 16.2 5.4 22.4-0.6l57.2-56.6c6.6-6.6 6.4-17.2-0.6-23.4-75-67.8-175.2-109.2-285-109.2s-210 41.4-285 109.2c-6.6 6.2-6.8 16.8-0.2 23.4z',
+    'M512 648.4c-46.8 0-89.2 19.6-118.8 51-6 6.4-5.8 16.2 0.4 22.4l106.8 105.4c6.4 6.4 16.8 6.4 23.2 0l106.8-105.4c6.2-6.2 6.4-16 0.4-22.4-29.6-31.2-72-51-118.8-51z',
 ];
 
 function wifiIcon(bars) {
     const b = Math.max(0, Math.min(3, bars));
     const paths = WIFI_ARCS.map((d, i) => {
-        let on;
-        if (i === 3) on = true;          // base dot always on
-        else on = b >= (3 - i);         // outer needs 3, mid needs 2, inner needs 1
+        const on = b >= (3 - i); // inner(2): b>=1, mid(1): b>=2, outer(0): b>=3
         return `<path d="${d}" opacity="${on ? 1 : 0.16}"></path>`;
     }).join('');
-    return `<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-        stroke-width="2" stroke-linecap="round" aria-hidden="true">${paths}</svg>`;
+    return `<svg class="icon" viewBox="0 0 1024 1024" fill="currentColor" aria-hidden="true">${paths}</svg>`;
 }
 
 function wiredIcon() {

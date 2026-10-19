@@ -100,7 +100,7 @@ def get_client_entries(data) -> list[dict]:
 
     for entry in data.get("mesh_nclient_list") or []:
         if isinstance(entry, dict) and entry.get("name"):
-            clients.append(_client_entry(entry, wired=False))
+            clients.append(_client_entry(entry, wired=bool(entry.get("is_wired"))))
 
     sclients = data.get("mesh_sclient_list") or []
     if isinstance(sclients, dict):

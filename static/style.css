@@ -251,7 +251,7 @@ tbody td {
 
 .mesh-table th:nth-child(5),
 .mesh-table td:nth-child(5) {
-    width: 18%;
+    width: 12%;
 }
 
 /* removed: Type column */
@@ -273,12 +273,12 @@ tbody td {
 
 .devices-table th:nth-child(4),
 .devices-table td:nth-child(4) {
-    width: 12%;
+    width: 8%;
 }
 
 .devices-table th:nth-child(5),
 .devices-table td:nth-child(5) {
-    width: 12%;
+    width: 16%;
 }
 
 /* removed: Type column */

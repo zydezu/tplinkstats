@@ -9,8 +9,9 @@ const sortState = {
 // Columns that aren't plain fields on the row
 const SORT_KEYS = {
     data_transfering_sort: r => (r.data_downloading || 0) + (r.data_uploading || 0),
-    // 0 for wired so they sort below every Wi-Fi client, then 1 (weak) to 4
-    signal_sort: r => (isWired(r) ? -1 : signalQuality(r)),
+    // Wired first, then high signal -> low signal (ascending). Reversing the
+    // sort direction gives the opposite grouping, as requested.
+    signal_sort: r => (isWired(r) ? -1000 : (4 - signalQuality(r))),
     mesh_name: r => r.mesh_name || '',
 };
 

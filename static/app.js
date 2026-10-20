@@ -9,8 +9,7 @@ const sortState = {
 // Columns that aren't plain fields on the row
 const SORT_KEYS = {
     data_transfering_sort: r => (r.data_downloading || 0) + (r.data_uploading || 0),
-    // Wired first, then high signal -> low signal (ascending). Reversing the
-    // sort direction gives the opposite grouping, as requested.
+    // Wired first, then high signal -> low signal
     signal_sort: r => (isWired(r) ? -1000 : (4 - signalQuality(r))),
     mesh_name: r => r.mesh_name || '',
 };
@@ -112,16 +111,12 @@ function isWired(d) {
     return !(Number(d.signal) < 0);
 }
 
-// 3-bar scale per requested thresholds:
-//   3 bars : RSSI >= -65 dBm
-//   2 bars : -65 > RSSI >= -75 dBm
-//   1 bar  : -75 > RSSI >= -85 dBm
-//   0 bars : RSSI < -85 dBm  (no signal)
+// 3-bar scale
 function signalQuality(d) {
     const dbm = Number(d.signal);
     if (!Number.isFinite(dbm) || dbm >= 0) return 0; // wired / unknown
-    if (dbm >= -65) return 3;
-    if (dbm >= -75) return 2;
+    if (dbm >= -67) return 3;
+    if (dbm >= -70) return 2;
     if (dbm >= -85) return 1;
     return 0;
 }

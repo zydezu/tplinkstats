@@ -116,7 +116,7 @@ function signalQuality(d) {
     const dbm = Number(d.signal);
     if (!Number.isFinite(dbm) || dbm >= 0) return 0; // wired / unknown
     if (dbm >= -67) return 3;
-    if (dbm >= -70) return 2;
+    if (dbm >= -75) return 2;
     if (dbm >= -85) return 1;
     return 0;
 }

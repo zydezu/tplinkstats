@@ -528,6 +528,7 @@ tbody td {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
+        justify-content: space-between;
         gap: 2px 6px;
         padding: 8px 2px;
     }
@@ -547,12 +548,9 @@ tbody td {
         padding: 8px 0;
     }
 
+    /* Labels hidden on mobile — values only, spaced evenly */
     td[data-label]::before {
-        content: attr(data-label);
-        margin-right: 0.45em;
-        color: var(--muted);
-        font-size: 0.56rem;
-        letter-spacing: 0.08em;
+        display: none;
     }
 
     .devices-table td:nth-child(1) {
@@ -567,13 +565,11 @@ tbody td {
         order: 2;
         flex: 0 0 auto;
         font-size: 0.66rem;
-        margin-right: 0.5em;
     }
 
     .devices-table td:nth-child(4) {
         order: 3;
         flex: 0 0 auto;
-        margin-left: auto;
     }
 
     .devices-table td:nth-child(2),
@@ -603,7 +599,6 @@ tbody td {
     .mesh-table td:nth-child(5) {
         order: 2;
         flex: 0 0 auto;
-        margin-left: auto;
     }
 
     .mesh-table td:nth-child(2) {

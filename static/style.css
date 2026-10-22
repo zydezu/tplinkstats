@@ -557,9 +557,11 @@ tbody td {
         letter-spacing: 0.08em;
     }
 
-    /* Connected devices: labels removed, values spaced evenly */
+    /* Connected devices: labels removed, pipe separators between values */
     .devices-table td[data-label]::before {
-        display: none;
+        content: " | ";
+        color: var(--muted);
+        margin-right: 0.3em;
     }
 
     .devices-table td:nth-child(1) {

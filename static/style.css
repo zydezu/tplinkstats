@@ -548,8 +548,17 @@ tbody td {
         padding: 8px 0;
     }
 
-    /* Labels hidden on mobile — values only, spaced evenly */
+    /* Labels shown on mobile for mesh cards */
     td[data-label]::before {
+        content: attr(data-label);
+        margin-right: 0.45em;
+        color: var(--muted);
+        font-size: 0.56rem;
+        letter-spacing: 0.08em;
+    }
+
+    /* Connected devices: labels removed, values spaced evenly */
+    .devices-table td[data-label]::before {
         display: none;
     }
 

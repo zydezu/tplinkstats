@@ -601,14 +601,14 @@ tbody td {
         display: flex;
         flex-wrap: wrap;
         align-items: center;
+        justify-content: flex-start;
         gap: 2px 6px;
         padding: 8px 2px;
     }
 
     .mesh-table td:nth-child(1) {
         order: 1;
-        flex: 1 1 auto;
-        min-width: 0;
+        flex: 0 0 auto;
         font-size: 0.82rem;
         font-weight: 600;
         margin-bottom: 2px;
@@ -617,6 +617,7 @@ tbody td {
     .mesh-table td:nth-child(5) {
         order: 2;
         flex: 0 0 auto;
+        margin-left: 0.4em;
     }
 
     .mesh-table td:nth-child(2),

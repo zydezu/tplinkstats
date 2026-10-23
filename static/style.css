@@ -669,8 +669,8 @@ tbody td {
     }
 
     .traffic-grid {
-        grid-template-columns: 1fr;
-        gap: 6px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 4px;
     }
 
     .traffic-card {
@@ -703,11 +703,16 @@ tbody td {
     }
 
     .traffic-card {
-        padding: 10px;
+        padding: 8px 6px;
+    }
+
+    .traffic-label {
+        font-size: 0.55rem;
+        margin-bottom: 3px;
     }
 
     .traffic-value {
-        font-size: 1rem;
+        font-size: 0.85rem;
     }
 
     table {

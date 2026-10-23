@@ -560,7 +560,7 @@ tbody td {
     /* Connected devices: pipe separators between all values */
     .devices-table td[data-label]::before,
     .devices-table td:nth-child(4)::before {
-        content: " | ";
+        content: " ・ ";
         color: var(--muted);
         margin-right: 0.3em;
     }

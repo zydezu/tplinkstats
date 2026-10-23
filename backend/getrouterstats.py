@@ -78,8 +78,12 @@ def normalize_mac(mac) -> str:
     return re.sub(r"[^0-9a-fA-F]", "", str(mac or "")).upper()
 
 
-# map deviceTag values the router sends for clients
-KNOWN_BANDS = {"2.4GHz": "2.4 GHz", "5GHz": "5 GHz", "6GHz": "6 GHz"}
+# deviceTag values the router sends for clients (both "5G" and "5GHz" seen)
+KNOWN_BANDS = {
+    "2.4G": "2.4 GHz", "2.4GHz": "2.4 GHz",
+    "5G": "5 GHz", "5GHz": "5 GHz",
+    "6G": "6 GHz", "6GHz": "6 GHz",
+}
 
 
 def describe_connection(device: dict) -> tuple[str, bool]:

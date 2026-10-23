@@ -114,7 +114,7 @@ function isWired(d) {
 function shortBand(conn) {
     if (!conn) return '';
     const m = String(conn).match(/(\d+(?:\.\d+)?)\s*GHz/i);
-    if (m) return m[1] + ' GHz';
+    if (m) return m[1] + 'GHz';
     return '';
 }
 

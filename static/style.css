@@ -571,6 +571,12 @@ tbody td {
         margin-right: 0.3em;
     }
 
+    /* No separator before the router/AP name */
+    .devices-table td:nth-child(5)::before {
+        content: "";
+        margin-right: 0.5em;
+    }
+
     .devices-table td:nth-child(1) {
         order: 1;
         flex: 1 1 auto;

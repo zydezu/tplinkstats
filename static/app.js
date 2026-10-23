@@ -110,11 +110,11 @@ function isWired(d) {
     return !(Number(d.signal) < 0);
 }
 
-// Short label for the radio band, e.g. "5 GHz" -> "5G"
+// Full band label, e.g. "5 GHz" (was "5G")
 function shortBand(conn) {
     if (!conn) return '';
     const m = String(conn).match(/(\d+(?:\.\d+)?)\s*GHz/i);
-    if (m) return m[1] + 'G';
+    if (m) return m[1] + ' GHz';
     return '';
 }
 

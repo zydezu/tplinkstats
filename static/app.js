@@ -138,7 +138,7 @@ function signalCell(d) {
     const tip = [d.connection, d.link_speed_readable].filter(Boolean).join(' · ');
     const band = shortBand(d.connection);
     return `<span class="sig sig-${signalQuality(d)}" title="${esc(tip)}">${wifiIcon(signalQuality(d))}<span
-            class="sig-text">${band ? band + ' ' : ''}${d.signal} dBm</span></span>`;
+            class="sig-text">${d.signal} dBm${band ? ' <span class="sig-band">' + band + '</span>' : ''}</span></span>`;
 }
 
 function meshCell(d) {

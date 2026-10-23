@@ -6,11 +6,10 @@ const sortState = {
     devices: { key: null, dir: 1 },
 };
 
-// Columns that aren't plain fields on the row
+// columns that aren't plain fields on the row
 const SORT_KEYS = {
     data_transfering_sort: r => (r.data_downloading || 0) + (r.data_uploading || 0),
-    // Wired first, then high signal -> low signal
-    signal_sort: r => (isWired(r) ? -1000 : (4 - signalQuality(r))),
+    signal_sort: r => (isWired(r) ? -1000 : (4 - signalQuality(r))), // Wired first, then high signal -> low signal
     mesh_name: r => r.mesh_name || '',
 };
 
@@ -111,6 +110,14 @@ function isWired(d) {
     return !(Number(d.signal) < 0);
 }
 
+// Short label for the radio band, e.g. "5 GHz" -> "5G"
+function shortBand(conn) {
+    if (!conn) return '';
+    const m = String(conn).match(/(\d+(?:\.\d+)?)\s*GHz/i);
+    if (m) return m[1] + 'G';
+    return '';
+}
+
 // 3-bar scale
 function signalQuality(d) {
     const dbm = Number(d.signal);
@@ -129,8 +136,9 @@ function signalCell(d) {
             class="sig-text">Wired</span></span>`;
     }
     const tip = [d.connection, d.link_speed_readable].filter(Boolean).join(' · ');
+    const band = shortBand(d.connection);
     return `<span class="sig sig-${signalQuality(d)}" title="${esc(tip)}">${wifiIcon(signalQuality(d))}<span
-            class="sig-text">${d.signal} dBm</span></span>`;
+            class="sig-text">${band ? band + ' ' : ''}${d.signal} dBm</span></span>`;
 }
 
 function meshCell(d) {

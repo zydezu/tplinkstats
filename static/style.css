@@ -621,18 +621,18 @@ tbody td {
         margin-right: auto;
     }
 
-    .mesh-table td:nth-child(2) {
+    .mesh-table td:nth-child(2),
+    .mesh-table td:nth-child(3) {
         order: 3;
         flex: 0 0 auto;
         font-size: 0.7rem;
-        margin-left: auto;
     }
 
-    .mesh-table td:nth-child(3),
     .mesh-table td:nth-child(4) {
         order: 3;
         flex: 0 0 auto;
         font-size: 0.7rem;
+        margin-left: auto;
     }
 
     .mesh-table td[data-label]::before {

@@ -206,7 +206,10 @@ async function fetchData(manual = false) {
             const loginErr = errs.authorization || errs.connection;
             if (loginErr) {
                 banner.className = 'error-banner error-severe';
-                banner.textContent = '⚠ Router unreachable, retrying — ' + loginErr.split('\n')[0];
+                const label = errs.authorization
+                    ? '⚠ Router login failed, retrying — '
+                    : '⚠ Router unreachable, retrying — ';
+                banner.textContent = label + loginErr.split('\n')[0];
             } else {
                 banner.className = 'error-banner';
                 banner.textContent = '⚠ Partial router error (stale data shown) — ' + errList.join(' | ');

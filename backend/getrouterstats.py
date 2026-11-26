@@ -147,13 +147,51 @@ def _get_encrypted_password(host: str, password: str) -> str:
     return EncryptionWrapper.rsa_encrypt(password, nn, ee)
 
 
-def _make_client() -> TplinkC5400XRouter:
+def _authorize(client: TplinkC5400XRouter, confirm: bool = False) -> None:
+    """Log in, optionally evicting the admin session already on the router.
+
+    Mirrors the library's C5400X authorize, but adds ``confirm=true`` when we
+    need to take over: a plain login is refused with "user conflict" while
+    another admin (browser tab, Tether app, stale session) holds the slot.
+    """
+    params = {
+        "operation": "login",
+        "username": client.username,
+        "password": client.password,
+    }
+    if confirm:
+        params["confirm"] = "true"
+
+    response = post(
+        f"{client.host}/cgi-bin/luci/;stok=/login?form=login",
+        params=params,
+        headers=client._headers_login,
+        timeout=client.timeout,
+        verify=client._verify_ssl,
+    )
+    payload = response.json()
+    if not payload.get("success") or not payload.get("data", {}).get("stok"):
+        raise ClientException(
+            f"TplinkRouter - C5400X - Cannot authorize! Response - {response.text}"
+        )
+    client._stok = payload["data"]["stok"]
+    match = re.search(r"sysauth=([^;]+)", response.headers.get("set-cookie", ""))
+    if match is None:
+        raise ClientException(
+            f"TplinkRouter - C5400X - Cannot authorize! Missing set-cookie; "
+            f"Response - {response.text}"
+        )
+    client._sysauth = match.group(1)
+    client._logged = True
+
+
+def _make_client(confirm: bool = False) -> TplinkC5400XRouter:
     """Create and return an authorised router client."""
     load_dotenv()
     web_password = os.getenv("WEB_PASSWORD")
     encrypted_password = _get_encrypted_password(ROUTER_HOST, web_password)
     client = TplinkC5400XRouter(ROUTER_HOST, encrypted_password)
-    client.authorize()
+    _authorize(client, confirm=confirm)
     return client
 
 
@@ -171,11 +209,16 @@ def _get_client() -> TplinkC5400XRouter:
     if _client is None:
         try:
             _client = _make_client()
-        except ClientException:
-            # A rejected login can mean the RSA key rotated after we fetched
-            # it, leaving the encrypted password stale. Re-fetch the key and
-            # encrypt again once before giving up and backing off.
-            _client = _make_client()
+        except ClientException as e:
+            # Rejected login: rebuild the ciphertext from a freshly fetched
+            # RSA key (it may have rotated). On "user conflict", also send
+            # confirm=true so we take over the other admin's session.
+            takeover = "user conflict" in str(e).lower()
+            print(
+                "[getrouterstats] Login rejected — retrying with fresh key"
+                + (" and session takeover" if takeover else "")
+            )
+            _client = _make_client(confirm=takeover)
     return _client
 
 

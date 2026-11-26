@@ -18,15 +18,24 @@ signal.signal(signal.SIGUSR1, lambda signum, frame: _wake_event.set())
 def main():
     print(f"[poller] Starting — fetching every {POLL_INTERVAL}s")
     failures = 0
+    conflicts = 0
     while True:
         try:
             getrouterstats.get_stats_json()
             print(f"[poller] OK — {getrouterstats.JSON_PATH} updated")
             failures = 0
+            conflicts = 0
         except RuntimeError as e:
             if "user conflict" in str(e).lower():
-                # Wait as another user has accessed the router's web UI
+                # Another admin session (usually the router's web UI) holds
+                # the single available slot. This isn't our fault and doesn't
+                # count towards the fatal-failure limit.
+                conflicts += 1
                 delay = USER_CONFLICT_RETRY_DELAY
+                print(
+                    f"[poller] Router busy — another admin session is active; "
+                    f"retrying in {delay}s (conflict #{conflicts})"
+                )
             else:
                 failures += 1
                 if failures >= MAX_FAILURES_BEFORE_EXIT:
@@ -34,7 +43,7 @@ def main():
                     sys.exit(1)
                 # don't hammer the login endpoint or trip its lockout.
                 delay = min(POLL_INTERVAL * 2**failures, RETRY_BACKOFF_MAX)
-            print(f"[poller] {e} — retrying in {delay}s (failure #{failures})")
+                print(f"[poller] {e} — retrying in {delay}s (failure #{failures})")
             _wake_event.wait(delay)
             _wake_event.clear()
             continue

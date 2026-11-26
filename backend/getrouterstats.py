@@ -1,12 +1,15 @@
+import atexit
 import json
 import os
 import re
+import threading
 
 from dotenv import load_dotenv
 from requests import post
 from requests.exceptions import ConnectionError as RequestsConnectionError, Timeout
 from tplinkrouterc6u import TplinkC5400XRouter
 from tplinkrouterc6u.common.encryption import EncryptionWrapper
+from tplinkrouterc6u.common.exception import ClientError, ClientException
 
 JSON_PATH = os.path.join("data", "network.json")
 ROUTER_HOST = "http://192.168.0.1"
@@ -152,6 +155,44 @@ def _make_client() -> TplinkC5400XRouter:
     client = TplinkC5400XRouter(ROUTER_HOST, encrypted_password)
     client.authorize()
     return client
+
+
+# The router only allows one admin session at a time. Logging in afresh on
+# every poll used to collide with that limit (and with our own just-closed
+# session), which surfaced as "user conflict". Keep one authenticated client
+# alive instead and only log in again when the session actually goes stale.
+_client: TplinkC5400XRouter | None = None
+_client_lock = threading.Lock()
+
+
+def _get_client() -> TplinkC5400XRouter:
+    """Return a live client, logging in only if we don't have one yet."""
+    global _client
+    if _client is None:
+        try:
+            _client = _make_client()
+        except ClientException:
+            # A rejected login can mean the RSA key rotated after we fetched
+            # it, leaving the encrypted password stale. Re-fetch the key and
+            # encrypt again once before giving up and backing off.
+            _client = _make_client()
+    return _client
+
+
+def _discard_client() -> None:
+    """Drop the current session, logging out on a best-effort basis."""
+    global _client
+    client, _client = _client, None
+    if client is not None:
+        try:
+            client.logout()
+        except Exception:
+            # A stale session can't be logged out cleanly; dropping our
+            # reference is enough, the router will expire it eventually.
+            pass
+
+
+atexit.register(_discard_client)
 
 
 def fetch_status(client: TplinkC5400XRouter) -> dict:
@@ -313,36 +354,58 @@ def get_stats_json():
         output = {}
 
     errors = {}
-    client = None
-    try:
+    # Serialise polls so two overlapping cycles can't fight over the session.
+    with _client_lock:
+        client = None
         try:
-            client = _make_client()
+            client = _get_client()
         except (RequestsConnectionError, Timeout) as e:
             errors["connection"] = str(e)
         except Exception as e:
             errors["authorization"] = str(e)
 
         if client:
-            try:
-                output.update(fetch_status(client))
-            except Exception as e:
-                errors["status"] = str(e)
+            def run(key: str, do_fetch) -> None:
+                """Fetch a section, re-authenticating once if the session went stale."""
+                nonlocal client
+                try:
+                    do_fetch(client)
+                    return
+                except ClientError:
+                    # Opening the router's web UI invalidates our stok. Try
+                    # logging in again once and retry just this section.
+                    pass
 
-            try:
-                output["mesh_data"] = fetch_mesh(client)
-            except Exception as e:
-                errors["mesh"] = str(e)
+                try:
+                    _discard_client()
+                    client = _get_client()
+                except (RequestsConnectionError, Timeout) as e:
+                    errors["connection"] = str(e)
+                    return
+                except Exception as e:
+                    errors["authorization"] = str(e)
+                    return
 
-            try:
-                output["devices"] = fetch_devices(client)
-            except Exception as e:
-                errors["devices"] = str(e)
+                try:
+                    do_fetch(client)
+                except Exception as e:
+                    errors[key] = str(e)
+
+            def fetch_status_into(c):
+                output.update(fetch_status(c))
+
+            def fetch_mesh_into(c):
+                output["mesh_data"] = fetch_mesh(c)
+
+            def fetch_devices_into(c):
+                output["devices"] = fetch_devices(c)
+
+            run("status", fetch_status_into)
+            run("mesh", fetch_mesh_into)
+            run("devices", fetch_devices_into)
 
             # Needs both halves, so runs last and survives either failing
             link_mesh_clients(output.get("devices", []), output.get("mesh_data", []))
-    finally:
-        if client:
-            client.logout()
 
     output["errors"] = errors  # empty dict == all good
 

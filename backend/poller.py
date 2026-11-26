@@ -7,6 +7,7 @@ import traceback
 import getrouterstats
 
 POLL_INTERVAL = 10  # seconds between fetches (a full fetch cycle takes ~12s)
+IDLE_REFRESH_INTERVAL = 600  # seconds; refresh anyway when nobody is watching
 USER_CONFLICT_RETRY_DELAY = 180  # seconds to wait before retrying login
 RETRY_BACKOFF_MAX = 300  # cap for the exponential backoff on connection/auth failures
 MAX_FAILURES_BEFORE_EXIT = 5  # then exit non-zero so systemd restarts the whole app
@@ -18,27 +19,34 @@ signal.signal(signal.SIGUSR1, lambda signum, frame: _wake_event.set())
 
 def main():
     print(
-        f"[poller] Starting — fetching every {POLL_INTERVAL}s "
-        "while the dashboard is being viewed"
+        f"[poller] Starting — fetching every {POLL_INTERVAL}s while the dashboard "
+        f"is being viewed, and every {IDLE_REFRESH_INTERVAL}s when idle"
     )
     failures = 0
     conflicts = 0
     idle_logged = False
+    last_fetch = 0.0  # 0 forces one fetch at startup so there's data to serve
     while True:
-        if not getrouterstats.viewer_present():
-            # Nobody is looking: don't log in or hit the router at all.
-            # Check once a second so a newly opened tab is picked up quickly.
+        idle = not getrouterstats.viewer_present()
+        if idle and time.monotonic() - last_fetch < IDLE_REFRESH_INTERVAL:
+            # Nobody is looking and no idle refresh is due: leave the router
+            # alone. Check once a second so a new tab is picked up quickly.
             if not idle_logged:
-                print("[poller] Idle — waiting for a viewer")
+                print("[poller] Idle — waiting for a viewer or the 10-minute refresh")
                 idle_logged = True
             _wake_event.wait(1)
             _wake_event.clear()
             continue
-        if idle_logged:
+        if idle:
+            print("[poller] Idle refresh — updating data despite no viewer")
+        elif idle_logged:
             print("[poller] Viewer detected — resuming fetches")
-            idle_logged = False
+        idle_logged = False
         try:
             getrouterstats.get_stats_json()
+            # Count the attempt, not just success, so a failed idle refresh
+            # can't bypass its error backoff.
+            last_fetch = time.monotonic()
             print(f"[poller] OK — {getrouterstats.JSON_PATH} updated")
             failures = 0
             conflicts = 0

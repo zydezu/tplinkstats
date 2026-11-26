@@ -312,7 +312,18 @@ if (isKiosk) {
 initSortHandlers('mesh-thead', sortState.mesh, renderMeshTable);
 initSortHandlers('devices-thead', sortState.devices, renderDevicesTable);
 
+// Only keep the poller fetching while somebody is actually looking. A hidden
+// tab stops pinging, so the poller goes idle and leaves the router alone.
+function visibleTick() {
+    if (document.visibilityState !== 'visible') return;
+    triggerPoll();
+    fetchData();
+}
+
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') visibleTick();
+});
+
 // Kick the poller awake as soon as the window opens
-triggerPoll();
-fetchData();
-setInterval(fetchData, 5000);
+visibleTick();
+setInterval(visibleTick, 5000);

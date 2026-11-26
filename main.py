@@ -19,7 +19,7 @@ import webbrowser
 
 from flask import Flask, jsonify, send_from_directory
 
-from backend.getrouterstats import JSON_PATH, bytes_to_readable_format
+from backend.getrouterstats import JSON_PATH, bytes_to_readable_format, touch_viewer
 
 app = Flask(__name__)
 
@@ -81,6 +81,9 @@ def data():
 
 @app.route("/trigger-poll", methods=["POST"])
 def trigger_poll():
+    # The browser only calls this while the page is visible, so it doubles as
+    # a "someone is watching" signal that keeps the poller fetching.
+    touch_viewer()
     # Wakes the poller immediately instead of waiting out its current sleep,
     if _poller_pid is not None:
         try:

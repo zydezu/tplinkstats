@@ -1,6 +1,7 @@
 import signal
 import sys
 import threading
+import time
 import traceback
 
 import getrouterstats
@@ -16,10 +17,26 @@ signal.signal(signal.SIGUSR1, lambda signum, frame: _wake_event.set())
 
 
 def main():
-    print(f"[poller] Starting — fetching every {POLL_INTERVAL}s")
+    print(
+        f"[poller] Starting — fetching every {POLL_INTERVAL}s "
+        "while the dashboard is being viewed"
+    )
     failures = 0
     conflicts = 0
+    idle_logged = False
     while True:
+        if not getrouterstats.viewer_present():
+            # Nobody is looking: don't log in or hit the router at all.
+            # Check once a second so a newly opened tab is picked up quickly.
+            if not idle_logged:
+                print("[poller] Idle — waiting for a viewer")
+                idle_logged = True
+            _wake_event.wait(1)
+            _wake_event.clear()
+            continue
+        if idle_logged:
+            print("[poller] Viewer detected — resuming fetches")
+            idle_logged = False
         try:
             getrouterstats.get_stats_json()
             print(f"[poller] OK — {getrouterstats.JSON_PATH} updated")
@@ -44,8 +61,9 @@ def main():
                 # don't hammer the login endpoint or trip its lockout.
                 delay = min(POLL_INTERVAL * 2**failures, RETRY_BACKOFF_MAX)
                 print(f"[poller] {e} — retrying in {delay}s (failure #{failures})")
-            _wake_event.wait(delay)
-            _wake_event.clear()
+            # Don't let viewer pings shorten a backoff: repeated failed
+            # logins can trip the router's ~2h admin lockout.
+            time.sleep(delay)
             continue
         except Exception:
             print("[poller] ERROR during fetch:")

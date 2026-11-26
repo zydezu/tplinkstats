@@ -3,6 +3,7 @@ import json
 import os
 import re
 import threading
+import time
 
 from dotenv import load_dotenv
 from requests import post
@@ -13,6 +14,30 @@ from tplinkrouterc6u.common.exception import ClientError, ClientException
 
 JSON_PATH = os.path.join("data", "network.json")
 ROUTER_HOST = "http://192.168.0.1"
+
+# The browser touches VIEWER_PATH while the dashboard is visible. The poller
+# only talks to the router while that timestamp is fresh, so an unattended
+# dashboard costs no router logins, requests or CPU.
+VIEWER_PATH = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data", ".viewer"
+)
+VIEWER_TTL = 15  # seconds; the browser pings every 5s
+
+
+def touch_viewer() -> None:
+    """Record that somebody is currently looking at the dashboard."""
+    os.makedirs(os.path.dirname(VIEWER_PATH), exist_ok=True)
+    with open(VIEWER_PATH, "w") as f:
+        f.write(str(time.time()))
+
+
+def viewer_present() -> bool:
+    """True while a browser tab is actively viewing the dashboard."""
+    try:
+        with open(VIEWER_PATH) as f:
+            return time.time() - float(f.read().strip()) < VIEWER_TTL
+    except (OSError, ValueError):
+        return False
 
 
 # Helpers

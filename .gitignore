@@ -7,3 +7,4 @@ __pycache__/
 *.json
 uv.lock
 .main.pid
+data/.viewer
